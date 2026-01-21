@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-black text-white min-h-screen font-mono">
+    
+    <div class="border-b border-yellow-600 p-4 flex justify-between items-center bg-gray-900 sticky top-0 z-50">
+        <h1 class="text-xl md:text-2xl text-yellow-500 font-bold tracking-wider"><i class="fa-solid fa-crown mr-2"></i>OWNER PANEL</h1>
+        <div class="flex gap-3">
+            <a href="market.html" class="bg-slate-700 px-3 py-1.5 rounded text-xs hover:bg-slate-600 border border-slate-500">Ke Market</a>
+            <button onclick="handleLogout()" class="bg-red-900 px-3 py-1.5 rounded text-xs border border-red-700 hover:bg-red-800">Logout</button>
+        </div>
+    </div>
+
+    <div class="p-4 md:p-6 max-w-7xl mx-auto">
+        
+        <div class="flex gap-2 mb-6 border-b border-gray-800 overflow-x-auto pb-1">
+            <button onclick="switchTab('store')" id="tab-store" class="tab-btn px-4 py-2 text-yellow-500 border-b-2 border-yellow-500 font-bold bg-gray-900 rounded-t whitespace-nowrap"><i class="fa-solid fa-shop mr-1"></i> TOKO OWNER</button>
+            <button onclick="switchTab('system')" id="tab-system" class="tab-btn px-4 py-2 text-gray-500 hover:text-white whitespace-nowrap"><i class="fa-solid fa-user-gear mr-1"></i> SYSTEM USER</button>
+            <button onclick="switchTab('website')" id="tab-website" class="tab-btn px-4 py-2 text-gray-500 hover:text-white whitespace-nowrap"><i class="fa-solid fa-globe mr-1"></i> WEBSITE CONFIG</button>
+        </div>
+
+        <div id="view-store" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 glass p-6 border border-yellow-600/50 rounded bg-slate-900/50 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-yellow-600 text-black text-[10px] px-3 py-1 font-bold">GOLD POSTER</div>
+                    <h3 class="font-bold text-yellow-500 mb-4 text-sm uppercase">Post Produk Official</h3>
+                    <form id="owner-post-form" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[10px] text-gray-500">Nama Toko (Branding)</label>
+                                <input type="text" id="op-name" value="LADERA OFFICIAL" class="w-full bg-black border border-gray-700 p-2 text-xs text-yellow-400 font-bold" readonly>
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-500">Tipe</label>
+                                <select id="op-type" class="w-full bg-black border border-gray-700 p-2 text-xs text-white">
+                                    <option value="Stock">Stock Item (Otomatis)</option>
+                                    <option value="Custom">Custom / Jasa (Manual)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <input type="text" id="op-title" placeholder="Nama Produk..." class="w-full bg-black border border-gray-700 p-2 text-xs focus:border-yellow-500 outline-none text-white" required>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" id="op-price" placeholder="Harga (Rp)..." class="w-full bg-black border border-gray-700 p-2 text-xs focus:border-yellow-500 outline-none text-white" required>
+                            <input type="text" id="op-img" placeholder="URL Gambar..." class="w-full bg-black border border-gray-700 p-2 text-xs focus:border-yellow-500 outline-none text-white">
+                        </div>
+                        <textarea id="op-desc" placeholder="Deskripsi Lengkap..." class="w-full bg-black border border-gray-700 p-2 text-xs h-20 focus:border-yellow-500 outline-none text-white"></textarea>
+                        
+                        <button type="submit" class="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 text-black font-bold py-2.5 text-xs hover:opacity-90 rounded">POSTING SEKARANG</button>
+                    </form>
+                </div>
+
+                <div class="glass p-4 border border-gray-700 rounded h-fit">
+                    <h3 class="font-bold text-gray-400 mb-3 text-xs uppercase">Riwayat Penjualan Owner</h3>
+                    <div id="owner-logs" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                        <p class="text-xs text-gray-600 italic">Belum ada data.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-system" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass p-6 border border-red-900 rounded bg-red-950/10">
+                    <h3 class="font-bold text-red-500 mb-4 text-sm"><i class="fa-solid fa-gavel"></i> BLACKLIST USER</h3>
+                    <p class="text-xs text-gray-400 mb-2">User akan logout paksa dan tidak bisa login.</p>
+                    <div class="flex gap-2">
+                        <input type="email" id="target-email" placeholder="Email User..." class="w-full bg-black border border-red-900 p-2 text-xs focus:border-red-500 outline-none text-white">
+                        <button onclick="banUserByEmail()" class="bg-red-600 text-white px-4 font-bold text-xs rounded hover:bg-red-700">BAN</button>
+                    </div>
+                </div>
+
+                <div class="glass p-6 border border-slate-700 rounded">
+                    <h3 class="font-bold text-slate-300 mb-4 text-sm">DAFTAR BANNED (USERS)</h3>
+                    <ul id="banned-users-list" class="text-xs text-red-400 space-y-2 h-40 overflow-y-auto">
+                        <li>Loading...</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-website" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <div class="glass p-6 border border-blue-900 rounded h-fit">
+                    <h3 class="font-bold text-blue-500 mb-4 text-sm">SETTING STATUS</h3>
+                    
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-2">
+                        <span class="text-xs text-gray-400">Maintenance Mode</span>
+                        <button id="btn-maint" onclick="toggleSettings('maintenance')" class="bg-gray-800 px-3 py-1 text-[10px] rounded uppercase font-bold tracking-wider">...</button>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-2">
+                        <span class="text-xs text-gray-400">Pendaftaran Seller</span>
+                        <button id="btn-reg" onclick="toggleSettings('openRegistration')" class="bg-gray-800 px-3 py-1 text-[10px] rounded uppercase font-bold tracking-wider">...</button>
+                    </div>
+
+                    <div>
+                        <span class="text-xs text-gray-400 block mb-1">Info / Running Text</span>
+                        <div class="flex gap-2">
+                            <input type="text" id="info-input" class="w-full bg-black border border-blue-900/50 p-2 text-xs text-blue-200">
+                            <button onclick="updateInfo()" class="bg-blue-600 px-3 font-bold text-xs rounded hover:bg-blue-500"><i class="fa-solid fa-save"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 glass p-6 border border-green-900/50 rounded">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-green-500 text-sm">GLOBAL TICKET MONITOR</h3>
+                        <span class="text-[10px] text-gray-500">*Aksi ini akan memberi status Rebuyer ke user</span>
+                    </div>
+                    
+                    <div id="global-tickets" class="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-1">
+                        </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { db, auth } from './app.js';
+        import { doc, getDoc, updateDoc, setDoc, collection, addDoc, query, where, onSnapshot, orderBy, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // TAB SWITCHER
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('text-yellow-500', 'border-b-2', 'border-yellow-500', 'font-bold', 'bg-gray-900', 'rounded-t');
+                el.classList.add('text-gray-500');
+            });
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.classList.add('text-yellow-500', 'border-b-2', 'border-yellow-500', 'font-bold', 'bg-gray-900', 'rounded-t');
+            activeBtn.classList.remove('text-gray-500');
+        }
+
+        // --- TAB 1: POST OWNER ---
+        document.getElementById('owner-post-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const storeName = document.getElementById('op-name').value;
+            try {
+                await addDoc(collection(db, "products"), {
+                    title: document.getElementById('op-title').value,
+                    price: Number(document.getElementById('op-price').value),
+                    image: document.getElementById('op-img').value,
+                    type: document.getElementById('op-type').value,
+                    description: document.getElementById('op-desc').value,
+                    storeName: storeName, 
+                    sellerUid: auth.currentUser.uid,
+                    createdAt: serverTimestamp()
+                });
+                alert("Produk Official Berhasil Diposting!");
+                document.getElementById('owner-post-form').reset();
+            } catch (err) {
+                alert("Gagal: " + err.message);
+            }
+        });
+
+        // Logs Penjualan Toko Owner
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                // Filter tiket dimana sellerUid adalah Owner
+                const qOwnerLogs = query(collection(db, "tickets"), where("sellerUid", "==", user.uid), orderBy("createdAt", "desc"));
+                onSnapshot(qOwnerLogs, (snap) => {
+                    const div = document.getElementById('owner-logs');
+                    div.innerHTML = '';
+                    if(snap.empty) div.innerHTML = '<p class="text-xs text-gray-600 italic">Belum ada penjualan.</p>';
+                    
+                    snap.forEach(d => {
+                        const t = d.data();
+                        const color = t.status === 'OPEN' ? 'text-green-400' : 'text-gray-400';
+                        div.innerHTML += `
+                            <div class="bg-black/50 p-2 text-xs rounded border border-gray-800 flex justify-between items-center hover:border-yellow-500 cursor-pointer" onclick="window.open('ticket.html?id=${d.id}')">
+                                <div>
+                                    <p class="font-bold text-yellow-500">${t.productName}</p>
+                                    <p class="text-[10px] text-gray-500">Buyer: ${t.buyerName}</p>
+                                </div>
+                                <span class="${color} font-bold">${t.status}</span>
+                            </div>`;
+                    });
+                });
+            }
+        });
+
+        // --- TAB 2: SYSTEM (BAN) ---
+        window.banUserByEmail = async () => {
+            const email = document.getElementById('target-email').value;
+            const q = query(collection(db, "users"), where("email", "==", email));
+            const snap = await getDocs(q);
+            
+            if(snap.empty) return alert("User tidak ditemukan.");
+            
+            snap.forEach(async (d) => {
+                await updateDoc(doc(db, "users", d.id), { isBanned: true });
+            });
+            alert(`User ${email} telah di-BANNED.`);
+        }
+        
+        const qBanned = query(collection(db, "users"), where("isBanned", "==", true));
+        onSnapshot(qBanned, (snap) => {
+            const list = document.getElementById('banned-users-list');
+            list.innerHTML = '';
+            if(snap.empty) list.innerHTML = '<li>Tidak ada user banned.</li>';
+            snap.forEach(d => {
+                const u = d.data();
+                list.innerHTML += `<li class="flex justify-between items-center bg-black p-2 rounded border border-red-900"><span>${u.email}</span> <button onclick="unban('${d.id}')" class="text-green-500 text-[10px] border border-green-500 px-2 rounded hover:bg-green-900">[UNBAN]</button></li>`;
+            });
+        });
+        
+        window.unban = async (uid) => {
+            await updateDoc(doc(db, "users", uid), { isBanned: false });
+        }
+
+        // --- TAB 3: WEBSITE CONFIG ---
+        const settingsRef = doc(db, "settings", "global");
+        
+        onSnapshot(settingsRef, (snap) => {
+            if(!snap.exists()) { setDoc(settingsRef, { maintenance: false, openRegistration: true }); return; }
+            
+            const d = snap.data();
+            const btnM = document.getElementById('btn-maint');
+            const btnR = document.getElementById('btn-reg');
+            
+            btnM.innerText = d.maintenance ? "MAINTENANCE (ON)" : "LIVE (NORMAL)";
+            btnM.className = d.maintenance ? "bg-red-600 text-white px-3 py-1 text-[10px] rounded font-bold" : "bg-green-600 text-black px-3 py-1 text-[10px] rounded font-bold";
+            
+            btnR.innerText = d.openRegistration ? "OPEN" : "CLOSED";
+            btnR.className = d.openRegistration ? "bg-green-600 text-black px-3 py-1 text-[10px] rounded font-bold" : "bg-red-600 text-white px-3 py-1 text-[10px] rounded font-bold";
+            
+            document.getElementById('info-input').value = d.info || "";
+        });
+
+        window.toggleSettings = async (field) => {
+            const snap = await getDoc(settingsRef);
+            const current = snap.exists() ? snap.data()[field] : false;
+            await setDoc(settingsRef, { [field]: !current }, { merge: true });
+        }
+
+        window.updateInfo = async () => {
+            await setDoc(settingsRef, { info: document.getElementById('info-input').value }, { merge: true });
+            alert("Info Updated");
+        }
+
+        // --- GLOBAL TICKETS & APPROVAL ---
+        const qGlobal = query(collection(db, "tickets"), orderBy("createdAt", "desc"));
+        onSnapshot(qGlobal, (snap) => {
+            const div = document.getElementById('global-tickets');
+            div.innerHTML = '';
+            snap.forEach(d => {
+                const t = d.data();
+                const isPaid = t.status === 'CLOSED_PAID';
+                
+                div.innerHTML += `
+                    <div class="bg-black/40 p-3 text-xs rounded border border-gray-700 flex flex-col md:flex-row justify-between items-center gap-2">
+                        <div class="flex-1">
+                            <p class="font-bold text-cyan-400">ID: ${d.id}</p>
+                            <p class="text-gray-400">Seller: ${t.storeName} -> Buyer: ${t.buyerName}</p>
+                            <p class="text-gray-500 text-[10px]">${t.productName}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="${t.status=='OPEN'?'text-green-400':'text-gray-500'} font-bold mr-2">${t.status}</span>
+                            ${!isPaid ? 
+                                `<button onclick="approveTicket('${d.id}', '${t.buyerUid}')" class="bg-green-600 text-black px-3 py-1 rounded font-bold hover:bg-white transition shadow-lg shadow-green-900/50">LUNAS & TUTUP</button>` 
+                                : '<span class="text-green-600 border border-green-600 px-2 rounded">DONE</span>'
+                            }
+                            <button onclick="window.open('ticket.html?id=${d.id}')" class="bg-slate-700 text-white px-3 py-1 rounded hover:bg-slate-600">CHAT</button>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+        // !!! FUNGSI PENTING: APPROVE TICKET !!!
+        window.approveTicket = async (ticketId, buyerUid) => {
+            if(!confirm("Apakah pembayaran sudah valid? \nAksi ini akan menutup tiket, mengeluarkan struk, dan memberi akses Garansi ke Buyer.")) return;
+            
+            try {
+                // 1. Update Tiket jadi Lunas & Buat Struk
+                await updateDoc(doc(db, "tickets", ticketId), {
+                    status: 'CLOSED_PAID',
+                    struk: `
+                        <div class="struk-paper">
+                            <h3 class="text-center font-bold border-b border-dashed pb-2 mb-2">OFFICIAL RECEIPT</h3>
+                            <p>Tiket ID: ${ticketId}</p>
+                            <p>Status: <span class="text-green-600 font-bold">LUNAS / PAID</span></p>
+                            <p class="text-[10px] mt-2">Authorized By: OWNER SYSTEM</p>
+                            <br>
+                            <p class="text-xs text-center font-bold">GARANSI AKTIF</p>
+                            <p class="text-[10px] text-center">Simpan struk ini.</p>
+                        </div>
+                    `
+                });
+
+                // 2. Berikan Status Rebuyer ke User
+                if(buyerUid) {
+                    await updateDoc(doc(db, "users", buyerUid), {
+                        isRebuyer: true 
+                    });
+                }
+                alert("Berhasil! Tiket Lunas & User sekarang adalah Rebuyer.");
+            } catch (e) {
+                alert("Error: " + e.message);
+            }
+        };
+
+        window.handleLogout = () => signOut(auth).then(()=> location.href='index.html');
+
+        // Expose functions globally
+        window.switchTab = switchTab;
+        window.banUserByEmail = banUserByEmail;
+        window.unban = unban;
+        window.toggleSettings = toggleSettings;
+        window.updateInfo = updateInfo;
+        window.handleLogout = handleLogout;
+        window.approveTicket = approveTicket;
+    </script>
+</body>
+</html>

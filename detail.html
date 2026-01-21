@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Detail Produk</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-900 text-white flex justify-center items-center min-h-screen p-4">
+
+    <div class="glass max-w-4xl w-full p-6 rounded-2xl relative">
+        <a href="market.html" class="absolute top-4 left-4 text-slate-400 hover:text-white"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+        
+        <div id="loading" class="text-center py-20">Loading product...</div>
+
+        <div id="content" class="hidden grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+            <div class="bg-black rounded-xl overflow-hidden h-80 border border-slate-700">
+                <img id="p-img" src="" class="w-full h-full object-contain">
+            </div>
+
+            <div class="flex flex-col justify-between">
+                <div>
+                    <div id="p-official" class="hidden inline-block bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded mb-2">OFFICIAL STORE</div>
+                    <h1 id="p-title" class="text-3xl font-bold mb-2 text-cyan-400">Nama Produk</h1>
+                    
+                    <div class="flex items-center gap-2 text-slate-400 mb-4 border-b border-slate-700 pb-4">
+                        <i class="fa-solid fa-store"></i>
+                        <span id="p-store" class="font-bold text-white">Nama Toko</span>
+                    </div>
+
+                    <p class="text-sm text-slate-300 mb-2 font-bold">Deskripsi:</p>
+                    <p id="p-desc" class="text-sm text-slate-400 mb-6 leading-relaxed whitespace-pre-line">...</p>
+                </div>
+
+                <div>
+                    <div class="flex items-end gap-2 mb-4">
+                        <span class="text-3xl font-bold text-white">Rp <span id="p-price">0</span></span>
+                    </div>
+
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="text-sm text-slate-400">Jumlah:</span>
+                        <input type="number" id="p-qty" value="1" min="1" class="bg-slate-800 border border-slate-600 rounded w-16 text-center py-1">
+                        <span id="type-label" class="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300">STOCK</span>
+                    </div>
+
+                    <button onclick="buyNow()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-black font-bold py-3 rounded-xl transition shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+                        <i class="fa-solid fa-cart-shopping"></i> BELI SEKARANG
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db, auth } from './app.js';
+        import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const pid = urlParams.get('id');
+        let productData = null;
+
+        // Load Detail
+        async function load() {
+            if(!pid) return location.href = 'market.html';
+            const snap = await getDoc(doc(db, "products", pid));
+            
+            if(!snap.exists()) return alert("Produk tidak ditemukan");
+            productData = snap.data();
+
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('content').classList.remove('hidden');
+
+            document.getElementById('p-img').src = productData.image;
+            document.getElementById('p-title').innerText = productData.title;
+            document.getElementById('p-store').innerText = productData.storeName;
+            document.getElementById('p-desc').innerText = productData.description || "-";
+            document.getElementById('p-price').innerText = productData.price.toLocaleString();
+            
+            if(productData.type === 'Custom') {
+                document.getElementById('p-qty').disabled = true;
+                document.getElementById('type-label').innerText = "CUSTOM / JASA";
+            }
+            
+            // Cek Official
+            if(productData.storeName.toLowerCase().includes('official') || productData.storeName.includes('LADERA')) {
+                document.getElementById('p-official').classList.remove('hidden');
+            }
+        }
+        load();
+
+        window.buyNow = async () => {
+            if(!auth.currentUser) return alert("Silakan Login dulu.");
+            
+            const qty = document.getElementById('p-qty').value;
+            const totalPrice = productData.price * qty;
+
+            try {
+                // 1. Buat Tiket
+                const tRef = await addDoc(collection(db, "tickets"), {
+                    productId: pid,
+                    productName: productData.title,
+                    price: totalPrice,
+                    buyerUid: auth.currentUser.uid,
+                    buyerName: auth.currentUser.displayName,
+                    sellerUid: productData.sellerUid,
+                    storeName: productData.storeName,
+                    status: 'OPEN',
+                    createdAt: serverTimestamp(),
+                    lastMessage: serverTimestamp()
+                });
+
+                // 2. SISTEM BOT (Jika toko Owner)
+                // Cek nama toko mengandung "Official" sebagai trigger Bot Owner
+                if(productData.storeName.toLowerCase().includes('official')) {
+                    await addDoc(collection(db, "tickets", tRef.id, "messages"), {
+                        text: `Halo! Terima kasih telah membeli di **${productData.storeName}**.\nTotal Tagihan: Rp ${totalPrice.toLocaleString()}.\nSilakan transfer dan kirim bukti disini.`,
+                        senderName: "SYSTEM BOT",
+                        senderUid: "system", // ID khusus
+                        createdAt: serverTimestamp()
+                    });
+                }
+
+                window.location.href = `ticket.html?id=${tRef.id}`;
+            } catch (e) {
+                alert("Error: " + e.message);
+            }
+        }
+    </script>
+</body>
+</html>
