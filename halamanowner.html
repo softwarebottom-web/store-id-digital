@@ -29,8 +29,11 @@
         <div id="view-store" class="tab-content">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 glass p-6 border border-yellow-600/50 rounded bg-slate-900/50 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-yellow-600 text-black text-[10px] px-3 py-1 font-bold">GOLD POSTER</div>
-                    <h3 class="font-bold text-yellow-500 mb-4 text-sm uppercase">Post Produk Official</h3>
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="font-bold text-yellow-500 text-sm uppercase">Post Produk Official</h3>
+                        <button id="btn-store-status" onclick="toggleStoreStatus()" class="text-[10px] px-3 py-1 rounded border font-bold">LOADING...</button>
+                    </div>
+
                     <form id="owner-post-form" class="space-y-3">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
@@ -39,7 +42,7 @@
                             </div>
                             <div>
                                 <label class="text-[10px] text-gray-500">Tipe</label>
-                                <select id="op-type" class="w-full bg-black border border-gray-700 p-2 text-xs text-white">
+  <select id="op-type" class="w-full bg-black border border-gray-700 p-2 text-xs text-white">
                                     <option value="Stock">Stock Item (Otomatis)</option>
                                     <option value="Custom">Custom / Jasa (Manual)</option>
                                 </select>
@@ -67,21 +70,49 @@
         </div>
 
         <div id="view-system" class="tab-content hidden">
+            <div class="glass p-6 border border-purple-900 rounded mb-6">
+                <h3 class="font-bold text-purple-400 mb-4 text-sm uppercase"><i class="fa-solid fa-users-viewfinder"></i> Permohonan Seller Pending</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-gray-300">
+                        <thead class="text-gray-500 border-b border-gray-700">
+                            <tr><th class="p-2">User</th><th class="p-2">Brand</th><th class="p-2">Alasan</th><th class="p-2">Aksi</th></tr>
+                        </thead>
+                        <tbody id="reg-list">
+                            <tr><td colspan="4" class="p-2 text-center">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="glass p-6 border border-red-900 rounded bg-red-950/10">
-                    <h3 class="font-bold text-red-500 mb-4 text-sm"><i class="fa-solid fa-gavel"></i> BLACKLIST USER</h3>
-                    <p class="text-xs text-gray-400 mb-2">User akan logout paksa dan tidak bisa login.</p>
-                    <div class="flex gap-2">
-                        <input type="email" id="target-email" placeholder="Email User..." class="w-full bg-black border border-red-900 p-2 text-xs focus:border-red-500 outline-none text-white">
-                        <button onclick="banUserByEmail()" class="bg-red-600 text-white px-4 font-bold text-xs rounded hover:bg-red-700">BAN</button>
+                    <h3 class="font-bold text-red-500 mb-4 text-sm"><i class="fa-solid fa-gavel"></i> SECURITY BANNED</h3>
+                    
+                    <div class="mb-4">
+                        <label class="text-[10px] text-gray-400">Ban by Email</label>
+                        <div class="flex gap-2">
+                            <input type="email" id="target-email" placeholder="user@gmail.com" class="w-full bg-black border border-red-900 p-2 text-xs focus:border-red-500 outline-none text-white">
+                            <button onclick="banUserByEmail()" class="bg-red-600 text-white px-3 font-bold text-xs rounded hover:bg-red-700">BAN</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] text-gray-400">Ban by IP Address</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="target-ip" placeholder="192.168.x.x" class="w-full bg-black border border-red-900 p-2 text-xs focus:border-red-500 outline-none text-white">
+                            <button onclick="banIpAddress()" class="bg-red-600 text-white px-3 font-bold text-xs rounded hover:bg-red-700">BAN</button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="glass p-6 border border-slate-700 rounded">
-                    <h3 class="font-bold text-slate-300 mb-4 text-sm">DAFTAR BANNED (USERS)</h3>
-                    <ul id="banned-users-list" class="text-xs text-red-400 space-y-2 h-40 overflow-y-auto">
-                        <li>Loading...</li>
-                    </ul>
+                    <h3 class="font-bold text-slate-300 mb-2 text-sm">DAFTAR HITAM (BLACKLIST)</h3>
+                    
+                    <p class="text-[10px] text-gray-500 border-b border-gray-800 pb-1 mt-2">Users Banned:</p>
+                    <ul id="banned-users-list" class="text-xs text-red-400 space-y-1 h-20 overflow-y-auto mb-4"><li>Loading...</li></ul>
+
+                    <p class="text-[10px] text-gray-500 border-b border-gray-800 pb-1">IP Banned:</p>
+                    <ul id="banned-ips-list" class="text-xs text-red-400 space-y-1 h-20 overflow-y-auto"><li>Loading...</li></ul>
                 </div>
             </div>
         </div>
@@ -89,6 +120,13 @@
         <div id="view-website" class="tab-content hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
+                <div class="lg:col-span-2 glass p-6 border border-gray-700 rounded h-96 flex flex-col">
+                    <h3 class="font-bold text-gray-300 mb-4 text-sm uppercase"><i class="fa-solid fa-boxes-stacked"></i> Management Semua Produk</h3>
+                    <div id="all-products-list" class="grid grid-cols-1 gap-2 overflow-y-auto pr-2">
+                        <p class="text-xs text-gray-500">Memuat semua produk...</p>
+                    </div>
+                </div>
+
                 <div class="glass p-6 border border-blue-900 rounded h-fit">
                     <h3 class="font-bold text-blue-500 mb-4 text-sm">SETTING STATUS</h3>
                     
@@ -110,16 +148,14 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="lg:col-span-2 glass p-6 border border-green-900/50 rounded">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-green-500 text-sm">GLOBAL TICKET MONITOR</h3>
-                        <span class="text-[10px] text-gray-500">*Aksi ini akan memberi status Rebuyer ke user</span>
-                    </div>
-                    
-                    <div id="global-tickets" class="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-1">
-                        </div>
+            <div class="glass p-6 border border-green-900/50 rounded mt-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-green-500 text-sm">GLOBAL TICKET MONITOR</h3>
                 </div>
+                <div id="global-tickets" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto">
+                    </div>
             </div>
         </div>
 
@@ -127,7 +163,7 @@
 
     <script type="module">
         import { db, auth } from './app.js';
-        import { doc, getDoc, updateDoc, setDoc, collection, addDoc, query, where, onSnapshot, orderBy, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { doc, getDoc, updateDoc, setDoc, collection, addDoc, query, where, onSnapshot, orderBy, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // TAB SWITCHER
@@ -144,7 +180,8 @@
             activeBtn.classList.remove('text-gray-500');
         }
 
-        // --- TAB 1: POST OWNER ---
+        // --- TAB 1: TOKO OWNER & STATUS ---
+        // Post Produk
         document.getElementById('owner-post-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const storeName = document.getElementById('op-name').value;
@@ -161,15 +198,26 @@
                 });
                 alert("Produk Official Berhasil Diposting!");
                 document.getElementById('owner-post-form').reset();
-            } catch (err) {
-                alert("Gagal: " + err.message);
-            }
+            } catch (err) { alert("Gagal: " + err.message); }
         });
+
+        // Toggle Status Toko Official
+        const globalRef = doc(db, "settings", "global");
+        onSnapshot(globalRef, (snap) => {
+            if(!snap.exists()) { setDoc(globalRef, { officialStoreOpen: true }); return; }
+            const isOpen = snap.data().officialStoreOpen;
+            const btn = document.getElementById('btn-store-status');
+            btn.innerText = isOpen ? "STATUS: BUKA" : "STATUS: TUTUP";
+            btn.className = isOpen ? "text-[10px] px-3 py-1 rounded border font-bold bg-green-900 text-green-300 border-green-500" : "text-[10px] px-3 py-1 rounded border font-bold bg-red-900 text-red-300 border-red-500";
+        });
+        window.toggleStoreStatus = async () => {
+            const snap = await getDoc(globalRef);
+            await setDoc(globalRef, { officialStoreOpen: !snap.data().officialStoreOpen }, { merge: true });
+        }
 
         // Logs Penjualan Toko Owner
         auth.onAuthStateChanged(user => {
             if(user) {
-                // Filter tiket dimana sellerUid adalah Owner
                 const qOwnerLogs = query(collection(db, "tickets"), where("sellerUid", "==", user.uid), orderBy("createdAt", "desc"));
                 onSnapshot(qOwnerLogs, (snap) => {
                     const div = document.getElementById('owner-logs');
@@ -181,10 +229,7 @@
                         const color = t.status === 'OPEN' ? 'text-green-400' : 'text-gray-400';
                         div.innerHTML += `
                             <div class="bg-black/50 p-2 text-xs rounded border border-gray-800 flex justify-between items-center hover:border-yellow-500 cursor-pointer" onclick="window.open('ticket.html?id=${d.id}')">
-                                <div>
-                                    <p class="font-bold text-yellow-500">${t.productName}</p>
-                                    <p class="text-[10px] text-gray-500">Buyer: ${t.buyerName}</p>
-                                </div>
+                                <div><p class="font-bold text-yellow-500">${t.productName}</p><p class="text-[10px] text-gray-500">Buyer: ${t.buyerName}</p></div>
                                 <span class="${color} font-bold">${t.status}</span>
                             </div>`;
                     });
@@ -192,46 +237,112 @@
             }
         });
 
-        // --- TAB 2: SYSTEM (BAN) ---
+        // --- TAB 2: SYSTEM USER (PENDAFTARAN & BAN) ---
+        
+        // 1. Pendaftaran Seller
+        const qReg = query(collection(db, "registrations"), where("status", "==", "pending"));
+        onSnapshot(qReg, (snap) => {
+            const list = document.getElementById('reg-list');
+            list.innerHTML = '';
+            if(snap.empty) list.innerHTML = '<tr><td colspan="4" class="p-2 text-center italic text-gray-500">Tidak ada pendaftaran pending.</td></tr>';
+            
+            snap.forEach(d => {
+                const r = d.data();
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-800 hover:bg-gray-900";
+                tr.innerHTML = `
+                    <td class="p-2">${r.displayName}<br><span class="text-[10px] text-gray-500">${r.email}</span></td>
+                    <td class="p-2 text-yellow-500 font-bold">${r.brandName}</td>
+                    <td class="p-2 text-gray-400 italic">${r.reason}</td>
+                    <td class="p-2 flex gap-1">
+                        <button onclick="accSeller('${d.id}', '${r.uid}', '${r.brandName}')" class="bg-green-600 text-black font-bold px-2 py-1 rounded text-[10px]">ACC</button>
+                        <button onclick="rejectSeller('${d.id}')" class="bg-red-900 text-white px-2 py-1 rounded text-[10px]">TOLAK</button>
+                    </td>
+                `;
+                list.appendChild(tr);
+            });
+        });
+
+        window.accSeller = async (regId, uid, brand) => {
+            if(!confirm("Terima jadi seller?")) return;
+            await updateDoc(doc(db, "users", uid), { role: 'seller', storeName: brand });
+            await updateDoc(doc(db, "registrations", regId), { status: 'approved' });
+        }
+        window.rejectSeller = async (regId) => {
+            if(!confirm("Tolak seller ini?")) return;
+            await updateDoc(doc(db, "registrations", regId), { status: 'rejected' });
+        }
+// 2. Ban System
         window.banUserByEmail = async () => {
             const email = document.getElementById('target-email').value;
+            if(!email) return;
             const q = query(collection(db, "users"), where("email", "==", email));
             const snap = await getDocs(q);
-            
             if(snap.empty) return alert("User tidak ditemukan.");
-            
-            snap.forEach(async (d) => {
-                await updateDoc(doc(db, "users", d.id), { isBanned: true });
-            });
+            snap.forEach(async (d) => await updateDoc(doc(db, "users", d.id), { isBanned: true }));
             alert(`User ${email} telah di-BANNED.`);
         }
+
+        window.banIpAddress = async () => {
+            const ip = document.getElementById('target-ip').value;
+            if(!ip) return;
+            await addDoc(collection(db, "banned_ips"), { ip: ip, bannedAt: serverTimestamp() });
+            alert(`IP ${ip} di-BANNED.`);
+        }
         
-        const qBanned = query(collection(db, "users"), where("isBanned", "==", true));
-        onSnapshot(qBanned, (snap) => {
+        // List Banned Users
+        onSnapshot(query(collection(db, "users"), where("isBanned", "==", true)), (snap) => {
             const list = document.getElementById('banned-users-list');
             list.innerHTML = '';
-            if(snap.empty) list.innerHTML = '<li>Tidak ada user banned.</li>';
             snap.forEach(d => {
-                const u = d.data();
-                list.innerHTML += `<li class="flex justify-between items-center bg-black p-2 rounded border border-red-900"><span>${u.email}</span> <button onclick="unban('${d.id}')" class="text-green-500 text-[10px] border border-green-500 px-2 rounded hover:bg-green-900">[UNBAN]</button></li>`;
+                list.innerHTML += `<li class="flex justify-between items-center bg-black p-1 rounded border border-red-900 mb-1"><span>${d.data().email}</span> <button onclick="unbanUser('${d.id}')" class="text-green-500 text-[10px] border border-green-500 px-1 rounded">[UNBAN]</button></li>`;
+            });
+        });
+
+        // List Banned IPs
+        onSnapshot(collection(db, "banned_ips"), (snap) => {
+            const list = document.getElementById('banned-ips-list');
+            list.innerHTML = '';
+            snap.forEach(d => {
+                list.innerHTML += `<li class="flex justify-between items-center bg-black p-1 rounded border border-red-900 mb-1"><span>${d.data().ip}</span> <button onclick="unbanIp('${d.id}')" class="text-green-500 text-[10px] border border-green-500 px-1 rounded">[DEL]</button></li>`;
             });
         });
         
-        window.unban = async (uid) => {
-            await updateDoc(doc(db, "users", uid), { isBanned: false });
+        window.unbanUser = async (uid) => await updateDoc(doc(db, "users", uid), { isBanned: false });
+        window.unbanIp = async (docId) => await deleteDoc(doc(db, "banned_ips", docId));
+
+        // --- TAB 3: WEBSITE CONFIG & PRODUK ---
+        // List Semua Produk
+        onSnapshot(collection(db, "products"), (snap) => {
+            const list = document.getElementById('all-products-list');
+            list.innerHTML = '';
+            snap.forEach(d => {
+                const p = d.data();
+                list.innerHTML += `
+                    <div class="bg-gray-900 p-2 border border-gray-700 rounded flex justify-between items-center text-xs group">
+                        <div class="flex items-center gap-2 overflow-hidden">
+                            <img src="${p.image}" class="w-8 h-8 rounded bg-black object-cover">
+                            <div>
+                                <p class="font-bold text-gray-300 truncate w-32 md:w-48">${p.title}</p>
+                                <p class="text-[10px] text-gray-500">${p.storeName}</p>
+                            </div>
+                        </div>
+                        <button onclick="deleteProduct('${d.id}')" class="bg-red-900 text-red-200 px-2 py-1 rounded text-[10px] hover:bg-red-600 hover:text-white">HAPUS</button>
+                    </div>
+                `;
+            });
+        });
+        window.deleteProduct = async (pid) => {
+            if(confirm("Hapus produk ini secara permanen?")) await deleteDoc(doc(db, "products", pid));
         }
 
-        // --- TAB 3: WEBSITE CONFIG ---
-        const settingsRef = doc(db, "settings", "global");
-        
-        onSnapshot(settingsRef, (snap) => {
-            if(!snap.exists()) { setDoc(settingsRef, { maintenance: false, openRegistration: true }); return; }
-            
-            const d = snap.data();
+        // Config Controls
+        onSnapshot(globalRef, (snap) => {
+            const d = snap.data() || {};
             const btnM = document.getElementById('btn-maint');
             const btnR = document.getElementById('btn-reg');
             
-            btnM.innerText = d.maintenance ? "MAINTENANCE (ON)" : "LIVE (NORMAL)";
+            btnM.innerText = d.maintenance ? "ON" : "OFF";
             btnM.className = d.maintenance ? "bg-red-600 text-white px-3 py-1 text-[10px] rounded font-bold" : "bg-green-600 text-black px-3 py-1 text-[10px] rounded font-bold";
             
             btnR.innerText = d.openRegistration ? "OPEN" : "CLOSED";
@@ -241,88 +352,68 @@
         });
 
         window.toggleSettings = async (field) => {
-            const snap = await getDoc(settingsRef);
-            const current = snap.exists() ? snap.data()[field] : false;
-            await setDoc(settingsRef, { [field]: !current }, { merge: true });
+            const snap = await getDoc(globalRef);
+            await setDoc(globalRef, { [field]: !snap.data()[field] }, { merge: true });
         }
-
         window.updateInfo = async () => {
-            await setDoc(settingsRef, { info: document.getElementById('info-input').value }, { merge: true });
+            await setDoc(globalRef, { info: document.getElementById('info-input').value }, { merge: true });
             alert("Info Updated");
         }
 
-        // --- GLOBAL TICKETS & APPROVAL ---
+        // Global Tickets
         const qGlobal = query(collection(db, "tickets"), orderBy("createdAt", "desc"));
         onSnapshot(qGlobal, (snap) => {
             const div = document.getElementById('global-tickets');
             div.innerHTML = '';
             snap.forEach(d => {
                 const t = d.data();
-                const isPaid = t.status === 'CLOSED_PAID';
-                
                 div.innerHTML += `
-                    <div class="bg-black/40 p-3 text-xs rounded border border-gray-700 flex flex-col md:flex-row justify-between items-center gap-2">
-                        <div class="flex-1">
+                    <div class="bg-black/40 p-3 text-xs rounded border border-gray-700 flex flex-col justify-between gap-2">
+                        <div>
                             <p class="font-bold text-cyan-400">ID: ${d.id}</p>
-                            <p class="text-gray-400">Seller: ${t.storeName} -> Buyer: ${t.buyerName}</p>
+                            <p class="text-gray-400">Seller: ${t.storeName}</p>
                             <p class="text-gray-500 text-[10px]">${t.productName}</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span class="${t.status=='OPEN'?'text-green-400':'text-gray-500'} font-bold mr-2">${t.status}</span>
-                            ${!isPaid ? 
-                                `<button onclick="approveTicket('${d.id}', '${t.buyerUid}')" class="bg-green-600 text-black px-3 py-1 rounded font-bold hover:bg-white transition shadow-lg shadow-green-900/50">LUNAS & TUTUP</button>` 
-                                : '<span class="text-green-600 border border-green-600 px-2 rounded">DONE</span>'
+                        <div class="flex items-center gap-2 justify-end">
+                            <span class="${t.status=='OPEN'?'text-green-400':'text-gray-500'} font-bold">${t.status}</span>
+                            ${t.status !== 'CLOSED_PAID' ? 
+                                `<button onclick="approveTicket('${d.id}', '${t.buyerUid}')" class="bg-green-600 text-black px-2 py-1 rounded font-bold text-[10px]">LUNAS</button>` : ''
                             }
-                            <button onclick="window.open('ticket.html?id=${d.id}')" class="bg-slate-700 text-white px-3 py-1 rounded hover:bg-slate-600">CHAT</button>
+                            <button onclick="window.open('ticket.html?id=${d.id}')" class="bg-slate-700 text-white px-2 py-1 rounded text-[10px]">CHAT</button>
                         </div>
                     </div>
                 `;
             });
         });
 
-        // !!! FUNGSI PENTING: APPROVE TICKET !!!
         window.approveTicket = async (ticketId, buyerUid) => {
-            if(!confirm("Apakah pembayaran sudah valid? \nAksi ini akan menutup tiket, mengeluarkan struk, dan memberi akses Garansi ke Buyer.")) return;
-            
+            if(!confirm("Validasi pembayaran?")) return;
             try {
-                // 1. Update Tiket jadi Lunas & Buat Struk
                 await updateDoc(doc(db, "tickets", ticketId), {
                     status: 'CLOSED_PAID',
-                    struk: `
-                        <div class="struk-paper">
-                            <h3 class="text-center font-bold border-b border-dashed pb-2 mb-2">OFFICIAL RECEIPT</h3>
-                            <p>Tiket ID: ${ticketId}</p>
-                            <p>Status: <span class="text-green-600 font-bold">LUNAS / PAID</span></p>
-                            <p class="text-[10px] mt-2">Authorized By: OWNER SYSTEM</p>
-                            <br>
-                            <p class="text-xs text-center font-bold">GARANSI AKTIF</p>
-                            <p class="text-[10px] text-center">Simpan struk ini.</p>
-                        </div>
-                    `
+                    struk: `<div class="struk-paper"><h3 class="text-center font-bold border-b border-dashed pb-2 mb-2">RECEIPT</h3><p>ID: ${ticketId}</p><p class="text-green-600 font-bold">LUNAS / PAID</p><br><p class="text-xs text-center font-bold">GARANSI AKTIF</p></div>`
                 });
-
-                // 2. Berikan Status Rebuyer ke User
-                if(buyerUid) {
-                    await updateDoc(doc(db, "users", buyerUid), {
-                        isRebuyer: true 
-                    });
-                }
-                alert("Berhasil! Tiket Lunas & User sekarang adalah Rebuyer.");
-            } catch (e) {
-                alert("Error: " + e.message);
-            }
+                if(buyerUid) await updateDoc(doc(db, "users", buyerUid), { isRebuyer: true });
+                alert("Tiket Lunas.");
+            } catch (e) { alert(e.message); }
         };
 
         window.handleLogout = () => signOut(auth).then(()=> location.href='index.html');
 
-        // Expose functions globally
+        // Expose functions
         window.switchTab = switchTab;
+        window.accSeller = accSeller;
+        window.rejectSeller = rejectSeller;
         window.banUserByEmail = banUserByEmail;
-        window.unban = unban;
+        window.banIpAddress = banIpAddress;
+        window.unbanUser = unbanUser;
+        window.unbanIp = unbanIp;
+        window.deleteProduct = deleteProduct;
         window.toggleSettings = toggleSettings;
         window.updateInfo = updateInfo;
         window.handleLogout = handleLogout;
         window.approveTicket = approveTicket;
+        window.toggleStoreStatus = toggleStoreStatus;
     </script>
 </body>
 </html>

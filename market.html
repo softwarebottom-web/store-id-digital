@@ -10,53 +10,59 @@
 </head>
 <body class="bg-slate-900 text-white pb-10">
 
-    <nav class="fixed top-0 w-full glass z-50 p-4 flex justify-between items-center border-b border-white/10">
-        <div class="font-tech text-xl font-bold text-cyan-400">LADERA<span class="text-white">STORE</span></div>
-        <div class="flex items-center gap-4 text-xs">
-            <div id="user-info" class="text-slate-300 hidden md:block">Loading...</div>
-            <button onclick="handleLogout()" class="text-red-400 border border-red-900 px-3 py-1 rounded hover:bg-red-900/20">LOGOUT</button>
+    <nav class="navbar">
+        <div class="brand text-cyan-400">LADERA<span class="text-white">STORE</span></div>
+        <div class="flex items-center gap-3 text-xs">
+            <div id="user-info" class="text-slate-300 hidden md:block font-bold">Loading...</div>
+            <button onclick="handleLogout()" class="text-red-400 border border-red-900 px-3 py-1 rounded hover:bg-red-900/20 transition">LOGOUT</button>
         </div>
     </nav>
 
-    <div class="pt-24 px-4 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div class="container grid grid-cols-1 lg:grid-cols-4 gap-6">
         
         <div class="lg:col-span-1 space-y-6">
             
-            <div class="glass p-4 bg-slate-800">
-                <h3 class="font-bold text-slate-400 mb-3 text-xs uppercase tracking-wider border-b border-slate-700 pb-2">Menu Utama</h3>
+            <div class="glass p-4 bg-slate-800/80">
+                <h3 class="font-bold text-slate-400 mb-3 text-xs uppercase tracking-wider border-b border-slate-700 pb-2">Menu Akses</h3>
                 <div id="dynamic-menu" class="space-y-2">
-                    <p class="text-xs text-slate-500 text-center">Memuat menu...</p>
+                    <p class="text-xs text-slate-500 text-center py-2"><i class="fa-solid fa-spinner fa-spin"></i> Memuat...</p>
                 </div>
             </div>
 
-            <div class="glass p-4 bg-slate-800">
-                <div class="flex justify-between items-center mb-3 border-b border-slate-700 pb-2">
-                    <h3 class="font-bold text-cyan-400 text-xs uppercase tracking-wider"><i class="fa-solid fa-ticket"></i> Tiket Saya</h3>
-                    <span class="text-[10px] text-slate-500 bg-slate-900 px-2 rounded" id="ticket-count">0</span>
+            <div class="glass p-5 bg-slate-800/80 text-center group hover:border-cyan-500 transition duration-300">
+                <div class="w-12 h-12 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-3 border border-slate-700 group-hover:border-cyan-500 group-hover:text-cyan-400 transition">
+                    <i class="fa-solid fa-receipt text-xl"></i>
                 </div>
-                <div id="my-tickets" class="space-y-2 max-h-80 overflow-y-auto pr-1">
-                    <p class="text-xs text-slate-500 text-center py-4">Memuat tiket...</p>
-                </div>
+                <h3 class="font-bold text-white text-sm mb-1">Tiket & Transaksi</h3>
+                <p class="text-[10px] text-slate-400 mb-4 leading-relaxed px-2">Cek status pembelian, chat seller, dan riwayat pesanan Anda disini.</p>
+                
+                <a href="tickets.html" class="block w-full bg-slate-700 hover:bg-cyan-600 hover:text-black text-white text-xs font-bold py-2.5 rounded transition border border-slate-600 hover:border-cyan-500 shadow-lg">
+                    BUKA TIKET SAYA <i class="fa-solid fa-arrow-right ml-1"></i>
+                </a>
             </div>
+
         </div>
 
         <div class="lg:col-span-3">
             
-            <div id="info-section" class="mb-6 hidden bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded text-sm text-slate-300 shadow-lg"></div>
+            <div id="info-section" class="mb-6 hidden bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg text-sm text-slate-300 shadow-lg flex items-start gap-3">
+                </div>
             
             <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
                 <div>
-                    <h2 class="text-2xl font-bold font-tech">Marketplace</h2>
-                    <p class="text-xs text-slate-400">Temukan script & jasa terbaik.</p>
+                    <h2 class="text-2xl font-bold font-tech text-white">Marketplace</h2>
+                    <p class="text-xs text-slate-400 mt-1">Jelajahi produk digital & jasa terpercaya.</p>
                 </div>
                 <div class="relative w-full md:w-64">
-                    <input type="text" id="search-input" placeholder="Cari produk..." class="w-full bg-slate-800 border border-slate-600 pl-9 pr-4 py-2 rounded text-sm focus:border-cyan-500 outline-none transition">
-                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                    <input type="text" id="search-input" placeholder="Cari nama produk..." class="w-full bg-slate-800 border border-slate-600 pl-9 pr-4 py-2.5 rounded-lg text-sm focus:border-cyan-500 outline-none transition shadow-inner text-white placeholder-slate-500">
+                    <i class="fa-solid fa-search absolute left-3 top-3 text-slate-500 text-xs"></i>
                 </div>
             </div>
 
-            <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                <div class="col-span-3 text-center py-10 text-slate-500">Memuat produk...</div>
+            <div id="product-grid" class="product-grid">
+                <div class="col-span-full text-center py-20 text-slate-500">
+                    <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Memuat produk...
+                </div>
             </div>
         </div>
     </div>
@@ -89,15 +95,17 @@
                 
                 // Button Utama Berdasarkan Role
                 if (role === 'owner') {
-                    menuHtml += `<a href="halamanowner.html" class="block w-full text-center bg-yellow-600 hover:bg-yellow-500 text-black font-bold py-2 rounded mb-2 transition shadow-[0_0_10px_rgba(234,179,8,0.4)]">PANEL OWNER</a>`;
+                    menuHtml += `<a href="halamanowner.html" class="block w-full text-center bg-yellow-600 hover:bg-yellow-500 text-black font-bold py-2.5 rounded mb-2 transition shadow-[0_0_15px_rgba(234,179,8,0.3)]"><i class="fa-solid fa-crown mr-1"></i> PANEL OWNER</a>`;
                 } else if (role === 'seller') {
-                    menuHtml += `<a href="sellerpanel.html" class="block w-full text-center bg-cyan-600 hover:bg-cyan-500 text-black font-bold py-2 rounded mb-2 transition shadow-[0_0_10px_rgba(6,182,212,0.4)]">PANEL SELLER</a>`;
+                    menuHtml += `<a href="sellerpanel.html" class="block w-full text-center bg-cyan-600 hover:bg-cyan-500 text-black font-bold py-2.5 rounded mb-2 transition shadow-[0_0_15px_rgba(6,182,212,0.3)]"><i class="fa-solid fa-shop mr-1"></i> PANEL SELLER</a>`;
                 } else {
                     // Buyer: Tombol Daftar
                     menuHtml += `
-                        <div class="p-3 bg-slate-900 border border-slate-700 rounded text-center mb-2">
-                            <p class="text-[10px] text-slate-400 mb-2">Mau jualan disini?</p>
-                            <a href="pendaftaran.html" class="block w-full bg-slate-700 hover:bg-white hover:text-black text-white text-xs font-bold py-2 rounded transition">DAFTAR SELLER</a>
+                        <div class="p-3 bg-slate-900/50 border border-slate-700 border-dashed rounded text-center mb-2">
+                            <p class="text-[10px] text-slate-400 mb-2">Tertarik menjual produk disini?</p>
+                            <a href="pendaftaran.html" class="block w-full bg-slate-700 hover:bg-white hover:text-black text-white text-xs font-bold py-2 rounded transition border border-slate-600">
+                                <i class="fa-solid fa-user-plus mr-1"></i> DAFTAR SELLER
+                            </a>
                         </div>
                     `;
                 }
@@ -106,8 +114,8 @@
                 if(isRebuyer) {
                     menuHtml += `
                         <div class="mt-4 pt-4 border-t border-slate-700">
-                            <p class="text-[10px] text-purple-400 mb-1 font-bold text-center">STATUS: MEMBER VIP / REBUYER</p>
-                            <a href="garansi.html" class="block w-full text-center bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold py-2 rounded transition shadow-[0_0_10px_rgba(147,51,234,0.3)]">
+                            <p class="text-[9px] text-purple-400 mb-1 font-bold text-center uppercase tracking-widest">Member Privilege</p>
+                            <a href="garansi.html" class="block w-full text-center bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold py-2.5 rounded transition shadow-[0_0_15px_rgba(147,51,234,0.3)]">
                                 <i class="fa-solid fa-shield-halved mr-1"></i> KLAIM GARANSI
                             </a>
                         </div>
@@ -116,55 +124,27 @@
 
                 menu.innerHTML = menuHtml;
 
-                // Load Tiket Pribadi
-                loadMyTickets(user.uid);
+                // (TIDAK ADA LAGI loadMyTickets DISINI AGAR TIDAK BERAT)
             } else {
                 window.location.href = 'index.html';
             }
         });
 
-        // 2. Fungsi Load Tiket Saya
-        function loadMyTickets(uid) {
-            const q = query(collection(db, "tickets"), where("buyerUid", "==", uid), orderBy("createdAt", "desc"));
-            onSnapshot(q, (snap) => {
-                const div = document.getElementById('my-tickets');
-                const count = document.getElementById('ticket-count');
-                
-                count.innerText = snap.size;
-                div.innerHTML = '';
-                
-                if(snap.empty) {
-                    div.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Belum ada tiket aktif.</p>';
-                    return;
-                }
-                
-                snap.forEach(d => {
-                    const t = d.data();
-                    const statusClass = t.status === 'OPEN' ? 'text-green-400 bg-green-900/30 border-green-900' : 'text-red-400 bg-red-900/30 border-red-900';
-                    
-                    div.innerHTML += `
-                        <a href="ticket.html?id=${d.id}" class="block bg-slate-900 p-3 rounded border border-slate-700 hover:border-cyan-500 transition group">
-                            <div class="flex justify-between items-start mb-1">
-                                <span class="font-bold text-xs text-white truncate w-24 group-hover:text-cyan-400">${t.productName}</span>
-                                <span class="text-[10px] px-1.5 py-0.5 rounded border ${statusClass}">${t.status}</span>
-                            </div>
-                            <p class="text-[10px] text-slate-400 truncate"><i class="fa-solid fa-store mr-1"></i> ${t.storeName}</p>
-                        </a>
-                    `;
-                });
-            });
-        }
-
-        // 3. Load Info Website
+        // 2. Load Info Website
         onSnapshot(doc(db, "settings", "global"), (snap) => {
             if(snap.exists() && snap.data().info) {
                 const info = document.getElementById('info-section');
                 info.classList.remove('hidden');
-                info.innerHTML = `<div class="flex items-center gap-3"><i class="fa-solid fa-bullhorn text-blue-400 text-xl"></i> <div><h4 class="font-bold text-blue-400 text-xs uppercase">Informasi</h4><p>${snap.data().info}</p></div></div>`;
+                info.innerHTML = `
+                    <i class="fa-solid fa-bullhorn text-blue-400 text-lg mt-0.5"></i> 
+                    <div>
+                        <h4 class="font-bold text-blue-400 text-xs uppercase mb-1">Informasi & Update</h4>
+                        <p class="leading-relaxed text-xs">${snap.data().info}</p>
+                    </div>`;
             }
         });
 
-        // 4. Load & Render Produk
+        // 3. Load & Render Produk
         const qProd = query(collection(db, "products"), orderBy("createdAt", "desc"));
         onSnapshot(qProd, (snap) => {
             allProducts = [];
@@ -177,44 +157,56 @@
             grid.innerHTML = '';
 
             if(products.length === 0) {
-                grid.innerHTML = '<div class="col-span-3 text-center py-10 text-slate-500">Tidak ada produk ditemukan.</div>';
+                grid.innerHTML = '<div class="col-span-full text-center py-20 text-slate-500"><i class="fa-regular fa-folder-open text-4xl mb-3 opacity-50"></i><p>Belum ada produk tersedia.</p></div>';
                 return;
             }
 
             products.forEach(p => {
-                // Deteksi Official Store (Logic: sellerUid Owner atau nama toko mengandung Official)
+                // Deteksi Official Store
                 const isOfficial = p.storeName.toLowerCase().includes('official') || p.storeName.includes('LADERA');
                 
-                // Style Card
-                let cardClass = "bg-slate-800 border border-slate-700 hover:border-cyan-500";
+                // Style Card Logic
+                let cardClass = "glass-card bg-slate-800 border-slate-700 hover:border-cyan-500";
                 let badge = "";
+                let iconColor = "text-slate-500";
 
                 if(isOfficial) {
-                    cardClass = "owner-card bg-slate-800"; // Class khusus di CSS
-                    badge = `<div class="absolute top-2 right-2 bg-yellow-500 text-black text-[9px] font-bold px-2 py-1 rounded shadow-lg z-10">OFFICIAL</div>`;
+                    cardClass = "owner-card"; // Menggunakan class khusus owner dari CSS
+                    badge = `<div class="absolute top-2 right-2 bg-gradient-to-r from-yellow-600 to-yellow-400 text-black text-[9px] font-bold px-2 py-0.5 rounded shadow-lg z-10"><i class="fa-solid fa-check-circle mr-0.5"></i> OFFICIAL</div>`;
+                    iconColor = "text-yellow-500";
                 }
 
                 grid.innerHTML += `
-                    <div onclick="location.href='detail.html?id=${p.id}'" class="${cardClass} rounded-xl overflow-hidden p-3 cursor-pointer group hover:-translate-y-1 transition relative shadow-lg">
+                    <div onclick="location.href='detail.html?id=${p.id}'" class="${cardClass} cursor-pointer group relative shadow-lg">
                         ${badge}
-                        <div class="h-36 w-full overflow-hidden rounded bg-black mb-3 border border-slate-700">
-                            <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500 opacity-90 group-hover:opacity-100" onerror="this.src='https://via.placeholder.com/300'">
+                        
+                        <div class="h-36 w-full overflow-hidden rounded-t-lg bg-black mb-2 border-b border-slate-700 relative">
+                            <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500 opacity-90 group-hover:opacity-100" onerror="this.src='https://via.placeholder.com/300/000000/FFFFFF/?text=No+Image'">
+                            
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                <span class="bg-cyan-600 text-black text-xs font-bold px-3 py-1 rounded-full">LIHAT DETAIL</span>
+                            </div>
                         </div>
-                        <h3 class="font-bold text-sm truncate text-white group-hover:text-cyan-400 mb-1">${p.title}</h3>
-                        <div class="flex items-center gap-1 text-[10px] text-slate-400 mb-3 border-b border-white/5 pb-2">
-                            <i class="fa-solid fa-store ${isOfficial ? 'text-yellow-500' : ''}"></i> 
-                            <span class="${isOfficial ? 'text-yellow-500 font-bold' : ''}">${p.storeName}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-cyan-400 font-bold text-sm">Rp ${p.price.toLocaleString()}</span>
-                            <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-1 rounded group-hover:bg-cyan-600 group-hover:text-black transition">DETAIL</span>
+
+                        <div class="card-content">
+                            <h3 class="font-bold text-sm truncate text-white group-hover:text-cyan-400 mb-1 transition">${p.title}</h3>
+                            
+                            <div class="flex items-center gap-1.5 text-[10px] text-slate-400 mb-3 border-b border-white/5 pb-2">
+                                <i class="fa-solid fa-store ${iconColor}"></i> 
+                                <span class="truncate ${isOfficial ? 'text-yellow-500 font-bold' : ''}">${p.storeName}</span>
+                            </div>
+
+                            <div class="mt-auto flex justify-between items-center">
+                                <span class="text-cyan-400 font-bold text-sm">Rp ${p.price.toLocaleString()}</span>
+                                <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-1 rounded group-hover:bg-cyan-600 group-hover:text-black transition">BELI</span>
+                            </div>
                         </div>
                     </div>
                 `;
             });
         }
 
-        // 5. Search Filter
+        // 4. Search Filter
         document.getElementById('search-input').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             const filtered = allProducts.filter(p => p.title.toLowerCase().includes(term));

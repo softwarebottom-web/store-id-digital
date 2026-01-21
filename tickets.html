@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tiket Saya</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen p-4">
+
+    <div class="max-w-2xl mx-auto">
+        <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
+            <h1 class="text-2xl font-bold text-cyan-400">Tiket & Transaksi Saya</h1>
+            <a href="market.html" class="bg-slate-700 px-4 py-2 rounded text-sm">Kembali ke Market</a>
+        </div>
+
+        <div id="ticket-list" class="space-y-4">
+            <p class="text-center text-gray-500 mt-10">Memuat data...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db, auth } from './app.js';
+        import { collection, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        auth.onAuthStateChanged(user => {
+            if(!user) return location.href = 'index.html';
+
+            // Ambil tiket dimana user adalah Buyer
+            const q = query(collection(db, "tickets"), where("buyerUid", "==", user.uid), orderBy("createdAt", "desc"));
+            
+            onSnapshot(q, (snap) => {
+                const list = document.getElementById('ticket-list');
+                list.innerHTML = '';
+                
+                if(snap.empty) {
+                    list.innerHTML = '<div class="text-center p-10 bg-slate-800 rounded text-gray-400">Belum ada transaksi tiket.</div>';
+                    return;
+                }
+
+                snap.forEach(d => {
+                    const t = d.data();
+                    const isOpen = t.status === 'OPEN';
+                    const bg = isOpen ? 'bg-slate-800 border-l-4 border-green-500' : 'bg-slate-800 border-l-4 border-red-500 opacity-70';
+                    
+                    list.innerHTML += `
+                        <div onclick="location.href='ticket.html?id=${d.id}'" class="${bg} p-4 rounded shadow-md cursor-pointer hover:bg-slate-700 transition">
+                            <div class="flex justify-between">
+                                <h3 class="font-bold text-lg">${t.productName}</h3>
+                                <span class="text-xs font-bold px-2 py-1 rounded ${isOpen?'bg-green-900 text-green-300':'bg-red-900 text-red-300'}">${t.status}</span>
+                            </div>
+                            <p class="text-sm text-gray-400">Store: ${t.storeName}</p>
+                            <p class="text-xs text-gray-500 mt-2">ID: ${d.id}</p>
+                        </div>
+                    `;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
