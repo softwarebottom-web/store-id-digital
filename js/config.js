@@ -7,7 +7,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyBB9qHDl1szIdcd9KsC_-bQIiXKW6CO2t8",
     
     // 👇 BAGIAN INI SANGAT PENTING AGAR LOGIN HP JALAN 👇
-    authDomain: "digital-store-fikri.biz.id", 
+    authDomain: "fs-shop-19c97.firebasestorage.app", 
     // 👆 JANGAN DIGANTI LAGI KE FIREBASEAPP.COM 👆
     
     projectId: "fs-shop-19c97",
