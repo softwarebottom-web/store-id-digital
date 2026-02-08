@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <title>Karir & Recruitment - FSF SHOP</title>
+    <script src="js/protect.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#121212] text-gray-200 min-h-screen p-6 font-sans select-none flex justify-center items-center">
+
+    <div class="max-w-2xl w-full bg-[#1e1e1e] border border-gray-800 rounded-lg p-8 shadow-2xl">
+        <h1 class="text-3xl font-bold text-white mb-2">🚀 Join FSF Team</h1>
+        <p class="text-gray-500 text-sm mb-6">Mari berkembang bersama komunitas FSF SHOP.</p>
+
+        <div id="recruitStatus" class="mb-6 p-4 rounded bg-gray-800 border border-gray-700 text-center hidden">
+            <span class="text-red-500 font-bold">MAAF, LOWONGAN SEDANG DITUTUP.</span>
+        </div>
+
+        <form id="careerForm" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-400 mb-1">Nama Lengkap / Panggilan</label>
+                <input type="text" id="cName" class="w-full bg-black border border-gray-700 rounded p-3 text-sm focus:border-blue-500 outline-none" required>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1">Umur</label>
+                    <input type="number" id="cAge" class="w-full bg-black border border-gray-700 rounded p-3 text-sm focus:border-blue-500 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1">Posisi Dilamar</label>
+                    <select id="cRole" class="w-full bg-black border border-gray-700 rounded p-3 text-sm focus:border-blue-500 outline-none">
+                        <option value="WORKER">Worker (Admin Toko)</option>
+                        <option value="PARTNER">Partner (Mitra Bisnis)</option>
+                        <option value="DESIGNER">Graphic Designer</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 mb-1">Keahlian (Skill)</label>
+                <input type="text" id="cSkill" placeholder="Contoh: Bisa coding JS, Fast Respon, Jago Desain..." class="w-full bg-black border border-gray-700 rounded p-3 text-sm focus:border-blue-500 outline-none" required>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 mb-1">Alasan Bergabung</label>
+                <textarea id="cReason" rows="4" class="w-full bg-black border border-gray-700 rounded p-3 text-sm focus:border-blue-500 outline-none" required></textarea>
+            </div>
+
+            <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded transition shadow-lg shadow-blue-900/50">
+                KIRIM LAMARAN
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <a href="dashboard.html" class="text-xs text-gray-500 hover:text-white">Kembali ke Dashboard</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db, sendDiscordLog } from './js/config.js';
+        import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
+        // 1. Cek Status Lowongan dari Database
+        async function checkStatus() {
+            const snap = await getDoc(doc(db, "settings", "general"));
+            if (snap.exists() && snap.data().recruitmentOpen === false) {
+                document.getElementById('careerForm').classList.add('hidden');
+                document.getElementById('recruitStatus').classList.remove('hidden');
+            }
+        }
+        checkStatus();
+
+        // 2. Submit Form
+        document.getElementById('careerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if(!user) return alert("Silakan Login dulu di Dashboard!");
+
+            const btn = document.getElementById('btnSubmit');
+            btn.innerText = "Mengirim..."; btn.disabled = true;
+
+            try {
+                // Simpan ke Firestore
+                await addDoc(collection(db, "applications"), {
+                    uid: user.uid,
+                    discordName: user.displayName,
+                    realName: document.getElementById('cName').value,
+                    age: document.getElementById('cAge').value,
+                    roleTarget: document.getElementById('cRole').value,
+                    skills: document.getElementById('cSkill').value,
+                    reason: document.getElementById('cReason').value,
+                    status: 'PENDING',
+                    createdAt: serverTimestamp()
+                });
+
+                // Kirim Log
+                sendDiscordLog("📄 Lamaran Masuk", `User: **${user.displayName}** melamar sebagai ${document.getElementById('cRole').value}.`, 3447003);
+
+                alert("Lamaran terkirim! Pantau status di Dashboard atau Discord.");
+                window.location.href = "dashboard.html";
+
+            } catch (err) {
+                alert("Error: " + err.message);
+                btn.innerText = "KIRIM LAMARAN"; btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
