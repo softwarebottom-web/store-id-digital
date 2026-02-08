@@ -6,7 +6,7 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/12.9.0/firebase
 const firebaseConfig = {
     apiKey: "AIzaSyBB9qHDl1szIdcd9KsC_-bQIiXKW6CO2t8",
     
-    // WAJIB PAKAI INI SUPAYA HANDLER KETEMU (TIDAK 404)
+    // Gunakan firebaseapp.com agar OIDC/Discord handler tidak 404
     authDomain: "fs-shop-19c97.firebaseapp.com", 
     
     projectId: "fs-shop-19c97",
@@ -20,14 +20,18 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// --- SISTEM ENKRIPSI WEBHOOK (AMANKAN DARI MALING) ---
-// (Ini kode keamanan webhook yang sudah Anda buat sebelumnya)
-const _0xSec = "ITM5ISXWEhhWGGPVqYifw6MhMTIh6LOvK4rWITM0ISEzNCFKaRAhMTAhlYuhYle+RCUhMTAhSLwYlttNrz0bkFUS5aeexz7WWiExMCH7Jt5BJiExMSHa2pXtJNsTKbXm6oBohcd7dqYSxex3dGfbUJgmkW95adESSsN7BXZEu/SPSFWUvK8hMTMhUAhFdQR1OxX18qP5WuAhMzMhJC0VmECVcAVRpgMvn94pT5+UAaUhMTEhKR6qN8bCw6o/485Qt1Xr5KP2f89GITE2MCExvQLI2eKwo974dsI+3cfrmUJLSPsQxA==";
+// --- SISTEM ENKRIPSI WEBHOOK (SUDAH DIPERBARUI) ---
+// Menggunakan string baru yang Anda berikan
+const _0xSec = "MyExMyHpvB65KeXT2X4sPtnyyRb9nhnJwMAHEbtSJgi+WolgfuxqmstVec4O19+Ij2epTQKLRE5QXxRgc4s1swghMzMhjAIlA41JlFb7p4mxuMZmX5uqITkhFyEzOSGLK5N6yBnUO2G2A1YDkJISiuy1INkakWs+A8tUPwEQdn+W7ijxh0Hnmaw0cw==";
 
 const _0xDec = (_0xStr) => {
     try {
+        // Balikkan string lalu decode Base64
         return atob(_0xStr.split("").reverse().join(""));
-    } catch (e) { return null; }
+    } catch (e) { 
+        console.error("Gagal dekripsi Webhook. Pastikan string _0xSec benar.");
+        return null; 
+    }
 };
 
 // --- HELPER FUNCTIONS ---
@@ -55,5 +59,5 @@ export const sendDiscordLog = async (title, description, color = 3447003, fields
                 }]
             })
         });
-    } catch (e) { /* Silent Error */ }
+    } catch (e) { console.error("Webhook Send Error:", e); }
 };
