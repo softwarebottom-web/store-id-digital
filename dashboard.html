@@ -1,45 +1,120 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <title>Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - FSF SHOP</title>
     <script src="js/protect.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Smooth transition untuk modal */
+        .modal-animate { transition: all 0.3s ease-in-out; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #121212; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
 </head>
 <body class="bg-[#121212] text-white select-none">
+    
     <nav class="bg-[#1a1a1a] p-4 border-b border-gray-800 flex justify-between sticky top-0 z-50">
-        <div class="font-bold text-blue-500 text-xl">FSF SHOP</div>
+        <div class="font-bold text-blue-500 text-xl tracking-tighter">FSF SHOP</div>
         <div class="flex gap-4 text-sm items-center">
-            <span id="navUsername">...</span>
-            <a href="karir.html" class="text-gray-400 hover:text-white">Karir</a>
-            <a href="ownerpanel.html" id="btnOwner" class="hidden text-purple-400 border border-purple-800 px-2 rounded">ADMIN</a>
-            <button onclick="logout()" class="text-red-500">Logout</button>
+            <span id="navUsername" class="text-gray-300 font-medium">...</span>
+            <a href="karir.html" class="text-gray-400 hover:text-white transition">Karir</a>
+            <a href="ownerpanel.html" id="btnOwner" class="hidden text-purple-400 border border-purple-800 px-3 py-1 rounded-md bg-purple-950/20 hover:bg-purple-900/30 transition">ADMIN</a>
+            <button onclick="logout()" class="text-red-500 hover:text-red-400 font-bold">Logout</button>
         </div>
     </nav>
+
     <div class="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="md:col-span-1">
-            <div class="bg-[#1e1e1e] p-4 rounded border border-gray-800">
-                <h3 class="font-bold text-gray-500 text-xs mb-4">TIKET SAYA</h3>
-                <div id="ticket-container" class="h-64 overflow-y-auto"></div>
+        
+        <div class="md:col-span-1 space-y-6">
+            <div class="bg-[#1e1e1e] p-4 rounded-xl border border-gray-800 shadow-lg">
+                <h3 class="font-bold text-gray-500 text-[10px] uppercase tracking-widest mb-4">Tiket Aktif</h3>
+                <div id="ticket-container" class="h-64 overflow-y-auto space-y-2 pr-1">
+                    </div>
             </div>
-            <div id="contract-widget" class="bg-[#1e1e1e] p-4 mt-4 rounded border border-yellow-600 hidden animate-pulse">
-                <h3 class="text-yellow-500 font-bold text-xs mb-2">⚠️ PENAWARAN KONTRAK</h3>
-                <button onclick="openContractModal()" class="w-full bg-yellow-600 text-black font-bold text-xs py-2 rounded">REVIEW</button>
+
+            <div id="contract-widget" class="bg-[#1e1e1e] p-4 rounded-xl border border-yellow-600/50 hidden animate-pulse shadow-lg shadow-yellow-900/10">
+                <h3 class="text-yellow-500 font-bold text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
+                    </span>
+                    Penawaran Kontrak
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-3">Owner telah mengirimkan kontrak kerja untuk Anda.</p>
+                <button onclick="openContractModal()" class="w-full bg-yellow-600 hover:bg-yellow-500 text-black font-black text-xs py-2 rounded-lg transition-all">REVIEW KONTRAK</button>
             </div>
         </div>
+
         <div class="md:col-span-3">
-            <h2 class="text-2xl font-bold mb-6">Marketplace</h2>
-            <div id="product-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">Loading...</div>
-            <div id="empty-msg" class="hidden text-center text-gray-500 mt-10">Kosong.</div>
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <span class="h-8 w-1 bg-blue-500 rounded-full"></span>
+                Digital Marketplace
+            </h2>
+            
+            <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div class="animate-pulse bg-gray-800 h-48 rounded-xl"></div>
+                <div class="animate-pulse bg-gray-800 h-48 rounded-xl"></div>
+                <div class="animate-pulse bg-gray-800 h-48 rounded-xl"></div>
+            </div>
+
+            <div id="empty-msg" class="hidden text-center text-gray-500 mt-20 py-10 border-2 border-dashed border-gray-800 rounded-2xl">
+                <p class="text-lg">Belum ada produk yang tersedia.</p>
+                <p class="text-xs mt-1">Silakan cek kembali nanti!</p>
+            </div>
         </div>
     </div>
-    <div id="contractModal" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center z-50">
-        <div class="bg-[#1e1e1e] p-8 rounded border border-gray-700 max-w-lg w-full">
-            <h2 class="text-xl font-bold mb-4">PERJANJIAN KERJA</h2>
-            <div id="contractContent" class="bg-black p-4 rounded text-sm text-gray-300 font-mono mb-4 h-40 overflow-y-auto"></div>
-            <div class="flex items-center gap-2 mb-4"><input type="checkbox" id="agreeCheck"><label class="text-sm">Saya Setuju</label></div>
-            <div class="flex gap-2"><button onclick="signContract()" class="bg-green-600 flex-1 py-2 rounded font-bold">TANDA TANGAN</button><button onclick="closeContractModal()" class="bg-red-900 flex-1 py-2 rounded text-red-300">BATAL</button></div>
+
+    <div id="detailModal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center z-[100] p-4 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-[#1e1e1e] max-w-md w-full rounded-2xl border border-gray-800 overflow-hidden shadow-2xl modal-animate" id="modalDetailContent">
+            <div id="detailImage" class="h-56 w-full bg-cover bg-center border-b border-gray-800 bg-[#252525]"></div>
+            
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h2 id="detailTitle" class="text-2xl font-bold text-white leading-tight"></h2>
+                        <p class="text-[10px] text-blue-500 font-bold uppercase mt-1 tracking-widest">Premium Product</p>
+                    </div>
+                    <span id="detailPrice" class="text-green-400 font-mono font-bold text-lg bg-green-400/10 px-3 py-1 rounded-lg"></span>
+                </div>
+                
+                <div class="max-h-40 overflow-y-auto mb-8 pr-2">
+                    <p id="detailDesc" class="text-gray-400 text-sm leading-relaxed"></p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button id="buyBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-900/20 active:scale-95">ORDER SEKARANG</button>
+                    <button onclick="closeDetail()" class="px-6 py-3 bg-gray-800 text-gray-400 rounded-xl hover:bg-gray-700 hover:text-white transition active:scale-95">TUTUP</button>
+                </div>
+            </div>
         </div>
     </div>
+
+    <div id="contractModal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center z-[110] p-4 backdrop-blur-md">
+        <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-gray-700 max-w-lg w-full shadow-2xl">
+            <h2 class="text-2xl font-bold mb-2 text-yellow-500">Perjanjian Kerja Sama</h2>
+            <p class="text-[11px] text-gray-500 mb-6 uppercase tracking-widest">FSF SHOP Official Contract</p>
+            
+            <div id="contractContent" class="bg-black/50 border border-gray-800 p-5 rounded-xl text-sm text-gray-300 font-mono mb-6 h-48 overflow-y-auto leading-relaxed">
+                Memuat isi kontrak...
+            </div>
+            
+            <div class="flex items-center gap-3 mb-6 bg-gray-900/50 p-3 rounded-lg border border-gray-800">
+                <input type="checkbox" id="agreeCheck" class="w-5 h-5 rounded border-gray-700 bg-gray-800 text-blue-600 focus:ring-0 focus:ring-offset-0">
+                <label for="agreeCheck" class="text-xs text-gray-400 leading-tight cursor-pointer">
+                    Saya menyatakan setuju dan akan mengikuti segala peraturan yang berlaku di FSF SHOP.
+                </label>
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="signContract()" class="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition active:scale-95 shadow-lg shadow-green-900/20">TANDA TANGAN</button>
+                <button onclick="closeContractModal()" class="flex-1 bg-red-900/20 text-red-500 py-3 rounded-xl hover:bg-red-900/30 transition active:scale-95">BATAL</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="js/dashboard.js"></script>
 </body>
 </html>

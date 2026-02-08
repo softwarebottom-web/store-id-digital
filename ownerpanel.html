@@ -27,6 +27,8 @@
         ::-webkit-scrollbar-track { background: #0f0f0f; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body class="bg-darkBg text-gray-300 font-sans antialiased overflow-hidden select-none">
@@ -40,16 +42,16 @@
                 </div>
                 
                 <nav class="mt-8 px-4 space-y-2">
-                    <button onclick="switchTab('dashboard')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition active-nav bg-gray-800 text-white flex items-center gap-3">
+                    <button onclick="switchTab('dashboard')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition bg-gray-800 text-white flex items-center gap-3">
                         <span>📊</span> Dashboard
                     </button>
-                    <button onclick="switchTab('products')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition flex items-center gap-3">
+                    <button onclick="switchTab('products')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition text-gray-400 flex items-center gap-3">
                         <span>📦</span> Produk
                     </button>
-                    <button onclick="switchTab('hrd')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition flex items-center gap-3">
+                    <button onclick="switchTab('hrd')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition text-gray-400 flex items-center gap-3">
                         <span>👥</span> HRD
                     </button>
-                    <button onclick="switchTab('coupons')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition flex items-center gap-3">
+                    <button onclick="switchTab('coupons')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition text-gray-400 flex items-center gap-3">
                         <span>🎟️</span> Kupon
                     </button>
                 </nav>
@@ -69,13 +71,11 @@
                     <button onclick="toggleSidebar()" class="text-white hover:bg-gray-800 p-2 rounded-md transition focus:outline-none">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     </button>
-
                     <div>
                         <h2 class="text-2xl font-bold text-white leading-none" id="pageTitle">Dashboard</h2>
                         <p class="text-xs text-gray-500 mt-1">Owner Control Panel</p>
                     </div>
                 </div>
-
                 <div class="bg-panelBg px-4 py-2 rounded border border-gray-800 text-xs shadow-sm">
                     Status: <span class="text-green-500 font-bold animate-pulse">ONLINE</span>
                 </div>
@@ -87,28 +87,28 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <div class="bg-panelBg p-6 rounded-lg border border-gray-800 hover:border-accent transition group">
                             <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Total Pendapatan</p>
-                            <h3 class="text-4xl font-mono font-bold text-green-400 mt-2" id="totalRev">Loading...</h3>
+                            <h3 class="text-4xl font-mono font-bold text-green-400 mt-2" id="totalRev">Rp 0</h3>
                         </div>
                         <div class="bg-panelBg p-6 rounded-lg border border-gray-800">
                             <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Terjual</p>
                             <h3 class="text-4xl font-mono font-bold text-white mt-2" id="totalSales">0</h3>
                         </div>
                         <div class="bg-panelBg p-6 rounded-lg border border-gray-800">
-                            <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Tiket Aktif</p>
-                            <h3 class="text-4xl font-mono font-bold text-yellow-500 mt-2">ACTIVE</h3>
+                            <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Server Status</p>
+                            <h3 class="text-4xl font-mono font-bold text-yellow-500 mt-2 text-sm uppercase">Cloud Active</h3>
                         </div>
                     </div>
                     <div class="bg-panelBg rounded-lg border border-gray-800 overflow-hidden shadow-xl">
-                         <div class="p-4 border-b border-gray-800 bg-[#202020]">
+                        <div class="p-4 border-b border-gray-800 bg-[#202020]">
                             <h3 class="font-bold text-sm text-white">Log Transaksi Terakhir</h3>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-sm text-gray-400">
                                 <thead class="bg-[#1a1a1a] text-gray-200">
                                     <tr>
-                                        <th class="p-4 whitespace-nowrap">Customer</th>
-                                        <th class="p-4 whitespace-nowrap">Produk</th>
-                                        <th class="p-4 whitespace-nowrap">Harga</th>
+                                        <th class="p-4">Customer</th>
+                                        <th class="p-4">Produk</th>
+                                        <th class="p-4">Harga</th>
                                     </tr>
                                 </thead>
                                 <tbody id="trxTable"></tbody>
@@ -132,10 +132,15 @@
                                         <input type="number" id="pPrice" class="w-full bg-darkBg border border-gray-700 rounded p-3 text-sm text-white focus:border-accent outline-none transition" required>
                                     </div>
                                     <div>
-                                        <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Deskripsi</label>
+                                        <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Foto Produk (File)</label>
+                                        <input type="file" accept="image/*" onchange="handleFileSelect(event)" class="w-full bg-darkBg border border-gray-700 rounded p-2 text-sm text-gray-400 outline-none transition file:bg-gray-800 file:border-none file:text-white file:text-xs file:px-3 file:py-1 file:rounded file:mr-3 cursor-pointer">
+                                        <p class="text-[10px] text-gray-600 mt-1">*Maks 500KB untuk kestabilan database.</p>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Deskripsi Produk</label>
                                         <textarea id="pDesc" rows="4" class="w-full bg-darkBg border border-gray-700 rounded p-3 text-sm text-white focus:border-accent outline-none transition" required></textarea>
                                     </div>
-                                    <button type="submit" class="w-full bg-accent hover:bg-indigo-600 text-white font-bold py-3 rounded shadow-lg shadow-indigo-900/50 transition">POST PRODUCT</button>
+                                    <button type="submit" class="w-full bg-accent hover:bg-indigo-600 text-white font-bold py-3 rounded shadow-lg transition">POST PRODUCT</button>
                                 </form>
                             </div>
                         </div>
@@ -146,55 +151,24 @@
 
                 <section id="hrd-section" class="tab-content hidden fade-in">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        
                         <div class="bg-panelBg p-6 rounded-lg border border-gray-800 h-[80vh] flex flex-col">
-                            <h3 class="font-bold text-white mb-4 text-lg border-b border-gray-700 pb-2">
-                                📂 Daftar Pelamar Masuk
-                            </h3>
+                            <h3 class="font-bold text-white mb-4 text-lg border-b border-gray-700 pb-2">📂 Daftar Pelamar Masuk</h3>
                             <div id="applicantList" class="space-y-3 overflow-y-auto flex-1 pr-2">
                                 <p class="text-center text-gray-500 py-10">Memuat data pelamar...</p>
                             </div>
                         </div>
-
                         <div class="bg-panelBg p-6 rounded-lg border border-gray-800 h-fit">
-                            <h3 class="font-bold text-white mb-4 text-lg border-b border-gray-700 pb-2">
-                                ✍️ Terbitkan Kontrak Kerja
-                            </h3>
-                            <p class="text-xs text-gray-500 mb-4">Pilih pelamar di sebelah kiri, lalu lengkapi data kontrak di bawah ini.</p>
-                            
+                            <h3 class="font-bold text-white mb-4 text-lg border-b border-gray-700 pb-2">✍️ Terbitkan Kontrak</h3>
                             <form id="contractForm" class="space-y-4">
-                                <div>
-                                    <label class="text-xs text-gray-500 uppercase font-bold">UID Target</label>
-                                    <input type="text" id="c_uid" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm font-mono" readonly placeholder="Otomatis terisi...">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500 uppercase font-bold">Nama Kandidat</label>
-                                    <input type="text" id="c_name" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm" readonly placeholder="Otomatis terisi...">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500 uppercase font-bold">Posisi / Role</label>
-                                    <select id="c_role" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm focus:border-accent outline-none">
-                                        <option value="WORKER">WORKER (Admin Toko)</option>
-                                        <option value="PARTNER">PARTNER (Mitra)</option>
-                                        <option value="MANAGER">MANAGER</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500 uppercase font-bold">Gaji / Komisi</label>
-                                    <input type="text" id="c_salary" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm focus:border-accent outline-none" placeholder="Contoh: Rp 500.000 / Bulan" required>
-                                </div>
-                                
-                                <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-3 rounded shadow-lg shadow-yellow-900/50 transition">
-                                    KIRIM KONTRAK DIGITAL
-                                </button>
+                                <input type="text" id="c_uid" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm font-mono" readonly placeholder="UID Target">
+                                <input type="text" id="c_name" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm" readonly placeholder="Nama Kandidat">
+                                <select id="c_role" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm focus:border-accent outline-none">
+                                    <option value="WORKER">WORKER (Admin)</option>
+                                    <option value="PARTNER">PARTNER (Mitra)</option>
+                                </select>
+                                <input type="text" id="c_salary" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm focus:border-accent outline-none" placeholder="Gaji / Komisi" required>
+                                <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-3 rounded transition shadow-lg">KIRIM KONTRAK</button>
                             </form>
-
-                            <div class="mt-8 pt-4 border-t border-gray-700 flex justify-between items-center">
-                                <span class="text-sm text-gray-400">Status Pendaftaran:</span>
-                                <button onclick="alert('Fitur toggle lowongan ada di update JS owner.js')" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-xs font-bold text-white">
-                                    CONFIG
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </section>
@@ -203,12 +177,12 @@
                     <div class="bg-panelBg p-6 rounded-lg border border-gray-800 max-w-lg mx-auto mt-10 shadow-2xl">
                         <div class="text-center mb-6">
                             <h3 class="font-bold text-2xl text-white">Kupon Manager</h3>
-                            <p class="text-xs text-gray-500">Buat kode promo untuk menarik pembeli</p>
+                            <p class="text-xs text-gray-500">Buat kode promo baru</p>
                         </div>
                         <div class="space-y-4">
-                            <input type="text" id="couponCode" placeholder="KODE KUPON (Ex: MERDEKA)" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-center font-mono uppercase tracking-widest focus:border-green-500 outline-none">
-                            <input type="number" id="couponDisc" placeholder="Diskon (Rp)" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-center">
-                            <button onclick="alert('Fitur kupon akan segera aktif')" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded font-bold shadow-lg shadow-green-900/50 transition">TERBITKAN KUPON</button>
+                            <input type="text" id="couponCode" placeholder="KODE KUPON" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-center font-mono uppercase focus:border-green-500 outline-none">
+                            <input type="number" id="couponDisc" placeholder="Diskon (IDR)" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-center">
+                            <button onclick="alert('Fitur kupon menyusul pada update JS')" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded font-bold shadow-lg transition">TERBITKAN</button>
                         </div>
                     </div>
                 </section>
@@ -220,31 +194,28 @@
     <script type="module" src="js/owner.js"></script>
     
     <script>
-        // TOGGLE SIDEBAR
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             if (sidebar.classList.contains('w-64')) {
-                sidebar.classList.remove('w-64'); sidebar.classList.add('w-0'); sidebar.classList.add('p-0');
+                sidebar.classList.remove('w-64'); sidebar.classList.add('w-0', 'p-0');
             } else {
-                sidebar.classList.remove('w-0'); sidebar.classList.remove('p-0'); sidebar.classList.add('w-64');
+                sidebar.classList.remove('w-0', 'p-0'); sidebar.classList.add('w-64');
             }
         }
 
-        // SWITCH TAB
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('bg-gray-800', 'text-white');
-                el.classList.add('text-gray-400');
+                el.classList.remove('bg-gray-800', 'text-white'); el.classList.add('text-gray-400');
             });
             document.getElementById(tabId + '-section').classList.remove('hidden');
             
-            const activeBtn = event.target.closest('button'); 
+            const activeBtn = event.currentTarget; 
             if(activeBtn) {
                 activeBtn.classList.add('bg-gray-800', 'text-white');
                 activeBtn.classList.remove('text-gray-400');
             }
-            const titles = { 'dashboard': 'Accounting & Overview', 'products': 'Product Management', 'hrd': 'HRD Control Center', 'coupons': 'Coupon Manager' };
+            const titles = { 'dashboard': 'Dashboard Overview', 'products': 'Product Management', 'hrd': 'HRD Center', 'coupons': 'Coupon Manager' };
             document.getElementById('pageTitle').innerText = titles[tabId];
         }
     </script>
