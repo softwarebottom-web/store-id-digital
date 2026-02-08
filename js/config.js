@@ -2,10 +2,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-// --- 1. CONFIG FIREBASE (Biarkan Terbuka, Aman karena Security Rules) ---
+// --- 1. CONFIG FIREBASE (SUDAH DIPERBAIKI) ---
 const firebaseConfig = {
     apiKey: "AIzaSyBB9qHDl1szIdcd9KsC_-bQIiXKW6CO2t8",
-    authDomain: "fs-shop-19c97.firebaseapp.com",
+    
+    // 👇 BAGIAN INI SANGAT PENTING AGAR LOGIN HP JALAN 👇
+    authDomain: "digital-store-fikri.biz.id", 
+    // 👆 JANGAN DIGANTI LAGI KE FIREBASEAPP.COM 👆
+    
     projectId: "fs-shop-19c97",
     storageBucket: "fs-shop-19c97.firebasestorage.app",
     messagingSenderId: "1000337517535",
@@ -17,7 +21,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-
+// --- 2. SISTEM ENKRIPSI WEBHOOK (AMANKAN DARI MALING) ---
 const _0xSec = "ITM5ISXWEhhWGGPVqYifw6MhMTIh6LOvK4rWITM0ISEzNCFKaRAhMTAhlYuhYle+RCUhMTAhSLwYlttNrz0bkFUS5aeexz7WWiExMCH7Jt5BJiExMSHa2pXtJNsTKbXm6oBohcd7dqYSxex3dGfbUJgmkW95adESSsN7BXZEu/SPSFWUvK8hMTMhUAhFdQR1OxX18qP5WuAhMzMhJC0VmECVcAVRpgMvn94pT5+UAaUhMTEhKR6qN8bCw6o/485Qt1Xr5KP2f89GITE2MCExvQLI2eKwo974dsI+3cfrmUJLSPsQxA==";
 
 const _0xDec = (_0xStr) => {
@@ -33,12 +37,9 @@ export const formatRupiah = (number) => {
 };
 
 export const sendDiscordLog = async (title, description, color = 3447003, fields = []) => {
-    // URL Webhook baru dibuka saat fungsi dipanggil (Lebih Aman)
     const _0xUrl = _0xDec(_0xSec); 
     
-    // Cek keamanan URL
     if (!_0xUrl || !_0xUrl.startsWith("http")) {
-        // Silent error agar user tidak curiga
         return;
     }
 
