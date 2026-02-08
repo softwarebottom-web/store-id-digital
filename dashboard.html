@@ -7,11 +7,13 @@
     <script src="js/protect.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Smooth transition untuk modal */
         .modal-animate { transition: all 0.3s ease-in-out; }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #121212; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        /* Style khusus untuk slider */
+        #imageSlider { display: flex; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .slide-item { min-width: 100%; height: 100%; background-size: cover; background-position: center; flex-shrink: 0; }
     </style>
 </head>
 <body class="bg-[#121212] text-white select-none">
@@ -31,8 +33,7 @@
         <div class="md:col-span-1 space-y-6">
             <div class="bg-[#1e1e1e] p-4 rounded-xl border border-gray-800 shadow-lg">
                 <h3 class="font-bold text-gray-500 text-[10px] uppercase tracking-widest mb-4">Tiket Aktif</h3>
-                <div id="ticket-container" class="h-64 overflow-y-auto space-y-2 pr-1">
-                    </div>
+                <div id="ticket-container" class="h-64 overflow-y-auto space-y-2 pr-1"></div>
             </div>
 
             <div id="contract-widget" class="bg-[#1e1e1e] p-4 rounded-xl border border-yellow-600/50 hidden animate-pulse shadow-lg shadow-yellow-900/10">
@@ -62,14 +63,26 @@
 
             <div id="empty-msg" class="hidden text-center text-gray-500 mt-20 py-10 border-2 border-dashed border-gray-800 rounded-2xl">
                 <p class="text-lg">Belum ada produk yang tersedia.</p>
-                <p class="text-xs mt-1">Silakan cek kembali nanti!</p>
             </div>
         </div>
     </div>
 
     <div id="detailModal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center z-[100] p-4 backdrop-blur-sm transition-opacity duration-300">
         <div class="bg-[#1e1e1e] max-w-md w-full rounded-2xl border border-gray-800 overflow-hidden shadow-2xl modal-animate" id="modalDetailContent">
-            <div id="detailImage" class="h-56 w-full bg-cover bg-center border-b border-gray-800 bg-[#252525]"></div>
+            
+            <div class="relative h-64 w-full bg-[#252525] overflow-hidden group">
+                <div id="imageSlider">
+                    </div>
+                
+                <button onclick="moveSlide(-1)" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full hover:bg-blue-600 transition opacity-0 group-hover:opacity-100 z-10">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <button onclick="moveSlide(1)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full hover:bg-blue-600 transition opacity-0 group-hover:opacity-100 z-10">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+                
+                <div class="absolute bottom-3 right-3 bg-black/60 px-2 py-1 rounded text-[10px] font-mono text-white z-10" id="slideCount">1/1</div>
+            </div>
             
             <div class="p-6">
                 <div class="flex justify-between items-start mb-4">
@@ -95,22 +108,14 @@
     <div id="contractModal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center z-[110] p-4 backdrop-blur-md">
         <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-gray-700 max-w-lg w-full shadow-2xl">
             <h2 class="text-2xl font-bold mb-2 text-yellow-500">Perjanjian Kerja Sama</h2>
-            <p class="text-[11px] text-gray-500 mb-6 uppercase tracking-widest">FSF SHOP Official Contract</p>
-            
-            <div id="contractContent" class="bg-black/50 border border-gray-800 p-5 rounded-xl text-sm text-gray-300 font-mono mb-6 h-48 overflow-y-auto leading-relaxed">
-                Memuat isi kontrak...
-            </div>
-            
+            <div id="contractContent" class="bg-black/50 border border-gray-800 p-5 rounded-xl text-sm text-gray-300 font-mono mb-6 h-48 overflow-y-auto"></div>
             <div class="flex items-center gap-3 mb-6 bg-gray-900/50 p-3 rounded-lg border border-gray-800">
-                <input type="checkbox" id="agreeCheck" class="w-5 h-5 rounded border-gray-700 bg-gray-800 text-blue-600 focus:ring-0 focus:ring-offset-0">
-                <label for="agreeCheck" class="text-xs text-gray-400 leading-tight cursor-pointer">
-                    Saya menyatakan setuju dan akan mengikuti segala peraturan yang berlaku di FSF SHOP.
-                </label>
+                <input type="checkbox" id="agreeCheck" class="w-5 h-5 rounded border-gray-700 bg-gray-800 text-blue-600">
+                <label for="agreeCheck" class="text-xs text-gray-400 cursor-pointer">Saya setuju dengan segala peraturan FSF SHOP.</label>
             </div>
-            
             <div class="flex gap-3">
-                <button onclick="signContract()" class="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition active:scale-95 shadow-lg shadow-green-900/20">TANDA TANGAN</button>
-                <button onclick="closeContractModal()" class="flex-1 bg-red-900/20 text-red-500 py-3 rounded-xl hover:bg-red-900/30 transition active:scale-95">BATAL</button>
+                <button onclick="signContract()" class="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition">TANDA TANGAN</button>
+                <button onclick="closeContractModal()" class="flex-1 bg-red-900/20 text-red-500 py-3 rounded-xl hover:bg-red-900/30 transition">BATAL</button>
             </div>
         </div>
     </div>

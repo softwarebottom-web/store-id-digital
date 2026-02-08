@@ -132,42 +132,52 @@
                                         <input type="number" id="pPrice" class="w-full bg-darkBg border border-gray-700 rounded p-3 text-sm text-white focus:border-accent outline-none transition" required>
                                     </div>
                                     <div>
-                                        <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Foto Produk (File)</label>
-                                        <input type="file" accept="image/*" onchange="handleFileSelect(event)" class="w-full bg-darkBg border border-gray-700 rounded p-2 text-sm text-gray-400 outline-none transition file:bg-gray-800 file:border-none file:text-white file:text-xs file:px-3 file:py-1 file:rounded file:mr-3 cursor-pointer">
-                                        <p class="text-[10px] text-gray-600 mt-1">*Maks 500KB untuk kestabilan database.</p>
+                                        <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Foto Produk (Multi - Max 4)</label>
+                                        <input type="file" id="pImages" accept="image/png, image/jpeg, image/webp" multiple onchange="handleFileSelect(event)" class="w-full bg-darkBg border border-gray-700 rounded p-2 text-sm text-gray-400 outline-none transition file:bg-gray-800 file:border-none file:text-white file:text-xs file:px-3 file:py-1 file:rounded file:mr-3 cursor-pointer">
+                                        <p class="text-[10px] text-gray-600 mt-1 uppercase tracking-tighter">*JPG, PNG, WEBP Mendukung • Maks 15MB Per File</p>
                                     </div>
                                     <div>
                                         <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Deskripsi Produk</label>
                                         <textarea id="pDesc" rows="4" class="w-full bg-darkBg border border-gray-700 rounded p-3 text-sm text-white focus:border-accent outline-none transition" required></textarea>
                                     </div>
-                                    <button type="submit" class="w-full bg-accent hover:bg-indigo-600 text-white font-bold py-3 rounded shadow-lg transition">POST PRODUCT</button>
+                                    <button type="submit" class="w-full bg-accent hover:bg-indigo-600 text-white font-bold py-3 rounded shadow-lg transition uppercase tracking-widest text-xs">Post Product</button>
                                 </form>
                             </div>
                         </div>
-                        <div class="xl:col-span-2 space-y-4" id="productList">
-                            </div>
+                        <div class="xl:col-span-2 space-y-4" id="productList"></div>
                     </div>
                 </section>
 
                 <section id="hrd-section" class="tab-content hidden fade-in">
+                    <div class="mb-6 p-6 bg-panelBg border border-gray-800 rounded-lg flex justify-between items-center shadow-lg">
+                        <div>
+                            <h4 class="text-white font-bold text-lg">System Recruitment Toggle</h4>
+                            <p class="text-xs text-gray-500 uppercase tracking-widest">Kontrol akses pendaftaran di halaman karir.html</p>
+                        </div>
+                        <button id="btnToggleCareer" onclick="toggleCareer()" class="px-6 py-3 rounded-xl text-white font-black transition active:scale-95 shadow-lg uppercase text-xs tracking-widest">
+                            Loading Status...
+                        </button>
+                    </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="bg-panelBg p-6 rounded-lg border border-gray-800 h-[80vh] flex flex-col">
-                            <h3 class="font-bold text-white mb-4 text-lg border-b border-gray-700 pb-2">📂 Daftar Pelamar Masuk</h3>
+                        <div class="bg-panelBg p-6 rounded-lg border border-gray-800 h-[70vh] flex flex-col shadow-xl">
+                            <h3 class="font-bold text-white mb-4 text-lg border-b border-gray-700 pb-2 uppercase tracking-tighter">📂 Daftar Pelamar Masuk</h3>
                             <div id="applicantList" class="space-y-3 overflow-y-auto flex-1 pr-2">
                                 <p class="text-center text-gray-500 py-10">Memuat data pelamar...</p>
                             </div>
                         </div>
-                        <div class="bg-panelBg p-6 rounded-lg border border-gray-800 h-fit">
-                            <h3 class="font-bold text-white mb-4 text-lg border-b border-gray-700 pb-2">✍️ Terbitkan Kontrak</h3>
+                        <div class="bg-panelBg p-6 rounded-lg border border-gray-800 h-fit shadow-xl">
+                            <h3 class="font-bold text-white mb-4 text-lg border-b border-gray-700 pb-2 uppercase tracking-tighter">✍️ Terbitkan Kontrak</h3>
                             <form id="contractForm" class="space-y-4">
                                 <input type="text" id="c_uid" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm font-mono" readonly placeholder="UID Target">
                                 <input type="text" id="c_name" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm" readonly placeholder="Nama Kandidat">
                                 <select id="c_role" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm focus:border-accent outline-none">
                                     <option value="WORKER">WORKER (Admin)</option>
                                     <option value="PARTNER">PARTNER (Mitra)</option>
+                                    <option value="MANAGER">MANAGER</option>
                                 </select>
                                 <input type="text" id="c_salary" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm focus:border-accent outline-none" placeholder="Gaji / Komisi" required>
-                                <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-3 rounded transition shadow-lg">KIRIM KONTRAK</button>
+                                <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-black py-3 rounded transition shadow-lg uppercase text-xs tracking-widest">Kirim Kontrak</button>
                             </form>
                         </div>
                     </div>
@@ -182,7 +192,7 @@
                         <div class="space-y-4">
                             <input type="text" id="couponCode" placeholder="KODE KUPON" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-center font-mono uppercase focus:border-green-500 outline-none">
                             <input type="number" id="couponDisc" placeholder="Diskon (IDR)" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-center">
-                            <button onclick="alert('Fitur kupon menyusul pada update JS')" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded font-bold shadow-lg transition">TERBITKAN</button>
+                            <button onclick="alert('Fitur kupon menyusul pada update JS')" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded font-bold shadow-lg transition uppercase text-xs">Terbitkan</button>
                         </div>
                     </div>
                 </section>
