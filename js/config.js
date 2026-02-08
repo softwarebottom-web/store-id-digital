@@ -2,13 +2,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-// --- 1. CONFIG FIREBASE (SUDAH DIPERBAIKI) ---
+// --- KONFIGURASI FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyBB9qHDl1szIdcd9KsC_-bQIiXKW6CO2t8",
     
-    // 👇 BAGIAN INI SANGAT PENTING AGAR LOGIN HP JALAN 👇
-    authDomain: "fs-shop-19c97.firebasestorage.app", 
-    // 👆 JANGAN DIGANTI LAGI KE FIREBASEAPP.COM 👆
+    // WAJIB PAKAI INI SUPAYA HANDLER KETEMU (TIDAK 404)
+    authDomain: "fs-shop-19c97.firebaseapp.com", 
     
     projectId: "fs-shop-19c97",
     storageBucket: "fs-shop-19c97.firebasestorage.app",
@@ -21,7 +20,8 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// --- 2. SISTEM ENKRIPSI WEBHOOK (AMANKAN DARI MALING) ---
+// --- SISTEM ENKRIPSI WEBHOOK (AMANKAN DARI MALING) ---
+// (Ini kode keamanan webhook yang sudah Anda buat sebelumnya)
 const _0xSec = "ITM5ISXWEhhWGGPVqYifw6MhMTIh6LOvK4rWITM0ISEzNCFKaRAhMTAhlYuhYle+RCUhMTAhSLwYlttNrz0bkFUS5aeexz7WWiExMCH7Jt5BJiExMSHa2pXtJNsTKbXm6oBohcd7dqYSxex3dGfbUJgmkW95adESSsN7BXZEu/SPSFWUvK8hMTMhUAhFdQR1OxX18qP5WuAhMzMhJC0VmECVcAVRpgMvn94pT5+UAaUhMTEhKR6qN8bCw6o/485Qt1Xr5KP2f89GITE2MCExvQLI2eKwo974dsI+3cfrmUJLSPsQxA==";
 
 const _0xDec = (_0xStr) => {
@@ -30,18 +30,14 @@ const _0xDec = (_0xStr) => {
     } catch (e) { return null; }
 };
 
-// --- 3. HELPER FUNCTIONS ---
-
+// --- HELPER FUNCTIONS ---
 export const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
 };
 
 export const sendDiscordLog = async (title, description, color = 3447003, fields = []) => {
     const _0xUrl = _0xDec(_0xSec); 
-    
-    if (!_0xUrl || !_0xUrl.startsWith("http")) {
-        return;
-    }
+    if (!_0xUrl || !_0xUrl.startsWith("http")) return;
 
     try {
         await fetch(_0xUrl, {
@@ -59,7 +55,5 @@ export const sendDiscordLog = async (title, description, color = 3447003, fields
                 }]
             })
         });
-    } catch (e) { 
-        // Silent error
-    }
+    } catch (e) { /* Silent Error */ }
 };
