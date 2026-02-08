@@ -1,9 +1,9 @@
 import { auth, db, formatRupiah, sendDiscordLog } from './config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc, getDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc, getDoc, query, where, orderBy, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-// Variabel penampung teks gambar
-let selectedImageBase64 = "";
+// Variabel penampung array gambar
+let selectedImagesBase64 = [];
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -13,28 +13,105 @@ onAuthStateChanged(auth, async (user) => {
     } else { window.location.href = "index.html"; }
 });
 
-function initOwner() { loadStats(); loadProducts(); loadApplicants(); }
+function initOwner() { loadStats(); loadProducts(); loadApplicants(); checkCareerToggle(); }
 
-// --- FUNGSI CONVERT GAMBAR KE TEKS (BASE64) ---
+// --- FUNGSI MULTI-IMAGE CONVERT (Max 15MB & Support WebP) ---
 window.handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        // Validasi Ukuran (Max 500KB agar database tidak berat)
-        if (file.size > 500 * 1024) {
-            alert("Ukuran file terlalu besar! Maksimal 500KB.");
-            event.target.value = "";
+    const files = Array.from(event.target.files);
+    selectedImagesBase64 = []; // Reset penampung
+    
+    if (files.length > 4) {
+        alert("Maksimal 4 foto per produk!");
+        event.target.value = "";
+        return;
+    }
+
+    files.forEach(file => {
+        // Limit 15MB per file
+        if (file.size > 15 * 1024 * 1024) {
+            alert(`File ${file.name} terlalu besar! Maksimal 15MB.`);
             return;
         }
 
         const reader = new FileReader();
         reader.onload = (e) => {
-            selectedImageBase64 = e.target.result; // Hasil teks gambar
-            console.log("Gambar berhasil dikonversi ke Base64");
+            selectedImagesBase64.push(e.target.result);
+            console.log("Foto dimuat: " + file.name);
         };
         reader.readAsDataURL(file);
-    }
+    });
 };
 
+// --- SETTINGS: TOGGLE KARIR ---
+async function checkCareerToggle() {
+    const careerRef = doc(db, "settings", "career_status");
+    const snap = await getDoc(careerRef);
+    const btn = document.getElementById('btnToggleCareer');
+    if (snap.exists() && btn) {
+        const isOpen = snap.data().isOpen;
+        btn.innerText = isOpen ? "TUTUP LOWONGAN" : "BUKA LOWONGAN";
+        btn.className = isOpen ? "bg-red-600 px-4 py-2 rounded text-white font-bold" : "bg-green-600 px-4 py-2 rounded text-white font-bold";
+    }
+}
+
+window.toggleCareer = async () => {
+    const careerRef = doc(db, "settings", "career_status");
+    const snap = await getDoc(careerRef);
+    const currentState = snap.exists() ? snap.data().isOpen : false;
+    
+    await setDoc(careerRef, { isOpen: !currentState }, { merge: true });
+    alert("Status karir berhasil diubah!");
+    checkCareerToggle();
+};
+
+// --- PRODUK MANAGEMENT ---
+async function loadProducts() {
+    const list = document.getElementById('productList');
+    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    list.innerHTML = "";
+    snap.forEach(docSnap => {
+        const d = docSnap.data();
+        // Ambil foto pertama untuk thumbnail
+        const thumb = (d.images && d.images.length > 0) ? d.images[0] : (d.image || 'https://via.placeholder.com/50');
+        
+        list.innerHTML += `
+            <div class="bg-[#202020] p-3 flex justify-between items-center border border-gray-800 rounded mb-2 hover:border-accent transition">
+                <div class="flex items-center gap-3">
+                    <img src="${thumb}" class="w-12 h-12 object-cover rounded border border-gray-700">
+                    <div>
+                        <p class="font-bold text-sm text-white">${d.name}</p>
+                        <p class="text-[10px] text-green-400">${formatRupiah(d.price)} | ${d.images ? d.images.length : 1} Foto</p>
+                    </div>
+                </div>
+                <button onclick="delProd('${docSnap.id}')" class="text-red-500 text-xs font-bold border border-red-900/50 px-3 py-1 rounded hover:bg-red-900 transition">HAPUS</button>
+            </div>`;
+    });
+}
+
+document.getElementById('addProductForm').addEventListener('submit', async(e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    btn.disabled = true; btn.innerText = "Processing High Res Data...";
+
+    try {
+        await addDoc(collection(db, "products"), { 
+            name: document.getElementById('pName').value, 
+            price: parseInt(document.getElementById('pPrice').value), 
+            description: document.getElementById('pDesc').value, 
+            images: selectedImagesBase64, // Menyimpan array gambar
+            createdAt: serverTimestamp() 
+        });
+        
+        alert("Produk Berhasil Ditambah!"); 
+        e.target.reset(); 
+        selectedImagesBase64 = []; 
+        loadProducts(); 
+    } catch (err) { alert("Gagal: " + err.message); } 
+    finally { btn.disabled = false; btn.innerText = "POST PRODUCT"; }
+});
+
+// --- LOAD STATS & HRD (Sesuai Struktur Awal) ---
 async function loadStats() {
     const q = query(collection(db, "tickets"), where("status", "==", "PAID"));
     const snap = await getDocs(q);
@@ -49,67 +126,16 @@ async function loadStats() {
     document.getElementById('trxTable').innerHTML = html;
 }
 
-async function loadProducts() {
-    const list = document.getElementById('productList');
-    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
-    list.innerHTML = "";
-    snap.forEach(docSnap => {
-        const d = docSnap.data();
-        list.innerHTML += `
-            <div class="bg-[#202020] p-3 flex justify-between items-center border border-gray-700 rounded mb-2 hover:border-gray-500 transition">
-                <div class="flex items-center gap-3">
-                    <img src="${d.image || 'https://via.placeholder.com/50'}" class="w-10 h-10 object-cover rounded border border-gray-600">
-                    <div>
-                        <p class="font-bold text-sm text-white">${d.name}</p>
-                        <p class="text-[10px] text-green-400 font-mono">${formatRupiah(d.price)}</p>
-                    </div>
-                </div>
-                <button onclick="delProd('${docSnap.id}')" class="text-red-500 text-xs border border-red-900 px-2 py-1 rounded">HAPUS</button>
-            </div>`;
-    });
-}
+window.delProd = async(id) => { if(confirm("Hapus produk ini?")) { await deleteDoc(doc(db, "products", id)); loadProducts(); } };
 
-document.getElementById('addProductForm').addEventListener('submit', async(e) => {
-    e.preventDefault();
-    const btn = e.target.querySelector('button');
-    btn.disabled = true; btn.innerText = "Uploading Data...";
-
-    const pName = document.getElementById('pName').value;
-    const pPrice = parseInt(document.getElementById('pPrice').value);
-    const pDesc = document.getElementById('pDesc').value;
-
-    try {
-        await addDoc(collection(db, "products"), { 
-            name: pName, 
-            price: pPrice, 
-            description: pDesc, 
-            image: selectedImageBase64, // Menyimpan teks gambar
-            createdAt: serverTimestamp() 
-        });
-        
-        alert("Produk Berhasil Ditambah!"); 
-        e.target.reset(); 
-        selectedImageBase64 = ""; // Reset variabel
-        loadProducts(); 
-    } catch (err) {
-        alert("Gagal: " + err.message);
-    } finally {
-        btn.disabled = false; btn.innerText = "POST PRODUCT";
-    }
-});
-
-window.delProd = async(id) => { if(confirm("Hapus?")) { await deleteDoc(doc(db, "products", id)); loadProducts(); } };
-
-// HRD & Kontrak Tetap Sama
 async function loadApplicants() {
     const list = document.getElementById('applicantList');
     const q = query(collection(db, "applications"), where("status", "==", "PENDING"));
     const snap = await getDocs(q);
     list.innerHTML = "";
-    snap.forEach(doc => {
-        const d = doc.data();
-        list.innerHTML += `<div class="bg-[#202020] p-2 border border-gray-700 rounded mb-2 text-xs"><div class="flex justify-between items-start"><div><p><strong>${d.realName}</strong> (${d.roleTarget})</p></div><button onclick="selApp('${d.uid}', '${d.realName}')" class="bg-blue-600 px-2 py-1 rounded text-white mt-1">PILIH</button></div></div>`;
+    snap.forEach(docSnap => {
+        const d = docSnap.data();
+        list.innerHTML += `<div class="bg-[#202020] p-2 border border-gray-700 rounded mb-2 text-xs flex justify-between items-center"><div><strong>${d.realName}</strong> (${d.roleTarget})</div><button onclick="selApp('${d.uid}', '${d.realName}')" class="bg-accent px-2 py-1 rounded text-white">PILIH</button></div>`;
     });
 }
 
