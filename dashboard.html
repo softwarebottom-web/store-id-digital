@@ -6,120 +6,166 @@
     <title>Dashboard - FSF SHOP</title>
     <script src="js/protect.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .modal-animate { transition: all 0.3s ease-in-out; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #121212; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-        /* Style khusus untuk slider */
+        body { background-color: #0c0c0c; color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .glass { background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
+        .nav-active { background: #3b82f6 !important; color: white !important; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
         #imageSlider { display: flex; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         .slide-item { min-width: 100%; height: 100%; background-size: cover; background-position: center; flex-shrink: 0; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-[#121212] text-white select-none">
+<body class="select-none flex h-screen overflow-hidden">
     
-    <nav class="bg-[#1a1a1a] p-4 border-b border-gray-800 flex justify-between sticky top-0 z-50">
-        <div class="font-bold text-blue-500 text-xl tracking-tighter">FSF SHOP</div>
-        <div class="flex gap-4 text-sm items-center">
-            <span id="navUsername" class="text-gray-300 font-medium">...</span>
-            <a href="karir.html" class="text-gray-400 hover:text-white transition">Karir</a>
-            <a href="ownerpanel.html" id="btnOwner" class="hidden text-purple-400 border border-purple-800 px-3 py-1 rounded-md bg-purple-950/20 hover:bg-purple-900/30 transition">ADMIN</a>
-            <button onclick="logout()" class="text-red-500 hover:text-red-400 font-bold">Logout</button>
-        </div>
-    </nav>
+    <button onclick="toggleSidebar()" class="md:hidden fixed top-5 left-5 z-[100] bg-blue-600 w-11 h-11 rounded-xl flex items-center justify-center shadow-lg">
+        <i class="fa-solid fa-bars text-white text-lg" id="barIcon"></i>
+    </button>
 
-    <div class="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
-        
-        <div class="md:col-span-1 space-y-6">
-            <div class="bg-[#1e1e1e] p-4 rounded-xl border border-gray-800 shadow-lg">
-                <h3 class="font-bold text-gray-500 text-[10px] uppercase tracking-widest mb-4">Tiket Aktif</h3>
-                <div id="ticket-container" class="h-64 overflow-y-auto space-y-2 pr-1"></div>
+    <aside id="mainSidebar" class="fixed inset-y-0 left-0 z-[90] w-72 bg-[#121212] border-r border-gray-800 flex flex-col justify-between py-6 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shrink-0">
+        <div>
+            <div class="px-8 mb-10 flex justify-between items-center">
+                <h1 class="font-black text-blue-500 text-2xl tracking-tighter">FSF <span class="text-white">SHOP</span></h1>
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-500"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
 
-            <div id="contract-widget" class="bg-[#1e1e1e] p-4 rounded-xl border border-yellow-600/50 hidden animate-pulse shadow-lg shadow-yellow-900/10">
-                <h3 class="text-yellow-500 font-bold text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
-                    </span>
-                    Penawaran Kontrak
-                </h3>
-                <p class="text-[11px] text-gray-400 mb-3">Owner telah mengirimkan kontrak kerja untuk Anda.</p>
-                <button onclick="openContractModal()" class="w-full bg-yellow-600 hover:bg-yellow-500 text-black font-black text-xs py-2 rounded-lg transition-all">REVIEW KONTRAK</button>
-            </div>
-        </div>
-
-        <div class="md:col-span-3">
-            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                <span class="h-8 w-1 bg-blue-500 rounded-full"></span>
-                Digital Marketplace
-            </h2>
-            
-            <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                <div class="animate-pulse bg-gray-800 h-48 rounded-xl"></div>
-                <div class="animate-pulse bg-gray-800 h-48 rounded-xl"></div>
-                <div class="animate-pulse bg-gray-800 h-48 rounded-xl"></div>
-            </div>
-
-            <div id="empty-msg" class="hidden text-center text-gray-500 mt-20 py-10 border-2 border-dashed border-gray-800 rounded-2xl">
-                <p class="text-lg">Belum ada produk yang tersedia.</p>
-            </div>
-        </div>
-    </div>
-
-    <div id="detailModal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center z-[100] p-4 backdrop-blur-sm transition-opacity duration-300">
-        <div class="bg-[#1e1e1e] max-w-md w-full rounded-2xl border border-gray-800 overflow-hidden shadow-2xl modal-animate" id="modalDetailContent">
-            
-            <div class="relative h-64 w-full bg-[#252525] overflow-hidden group">
-                <div id="imageSlider">
-                    </div>
-                
-                <button onclick="moveSlide(-1)" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full hover:bg-blue-600 transition opacity-0 group-hover:opacity-100 z-10">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            <nav class="space-y-2 px-4">
+                <button onclick="switchTab('market')" class="tab-btn nav-active w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition duration-200 text-white">
+                    <i class="fa-solid fa-shop"></i> <span class="text-sm font-bold">Marketplace</span>
                 </button>
-                <button onclick="moveSlide(1)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full hover:bg-blue-600 transition opacity-0 group-hover:opacity-100 z-10">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                <button onclick="switchTab('tickets')" class="tab-btn text-gray-500 w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-white/5 transition duration-200">
+                    <i class="fa-solid fa-ticket"></i> <span class="text-sm font-bold">Tiket Saya</span>
                 </button>
-                
-                <div class="absolute bottom-3 right-3 bg-black/60 px-2 py-1 rounded text-[10px] font-mono text-white z-10" id="slideCount">1/1</div>
+                <button onclick="switchTab('vip')" class="tab-btn text-yellow-500/50 w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-yellow-500/5 transition duration-200">
+                    <i class="fa-solid fa-crown"></i> <span class="text-sm font-bold">Executive Room</span>
+                </button>
+                <a href="karir.html" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-gray-500 hover:bg-white/5 transition duration-200">
+                    <i class="fa-solid fa-briefcase"></i> <span class="text-sm font-bold">Karir</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="px-4 space-y-2">
+            <a href="ownerpanel.html" id="btnOwner" class="hidden w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-purple-400 border border-purple-900/50 bg-purple-900/10 hover:bg-purple-900/20 transition">
+                <i class="fa-solid fa-user-shield"></i> <span class="text-[10px] font-black uppercase">Admin Panel</span>
+            </a>
+            <button onclick="logout()" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-red-500 hover:bg-red-500/5 transition">
+                <i class="fa-solid fa-right-from-bracket"></i> <span class="text-sm font-bold">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-[85] hidden backdrop-blur-sm transition-opacity"></div>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#0c0c0c] md:ml-0">
+        <header class="h-20 flex items-center justify-between px-8 border-b border-gray-800 shrink-0">
+            <div class="ml-12 md:ml-0">
+                <h2 id="tabTitle" class="text-xl font-bold">Marketplace</h2>
+                <p class="text-[10px] text-gray-500 uppercase tracking-widest">User: <span id="navUsername" class="text-blue-400">...</span></p>
             </div>
             
-            <div class="p-6">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <h2 id="detailTitle" class="text-2xl font-bold text-white leading-tight"></h2>
-                        <p class="text-[10px] text-blue-500 font-bold uppercase mt-1 tracking-widest">Premium Product</p>
-                    </div>
-                    <span id="detailPrice" class="text-green-400 font-mono font-bold text-lg bg-green-400/10 px-3 py-1 rounded-lg"></span>
-                </div>
-                
-                <div class="max-h-40 overflow-y-auto mb-8 pr-2">
-                    <p id="detailDesc" class="text-gray-400 text-sm leading-relaxed"></p>
-                </div>
+            <div id="contract-widget" class="hidden bg-yellow-950/20 border border-yellow-800 px-4 py-2 rounded-xl animate-pulse cursor-pointer" onclick="openContractModal()">
+                <p class="text-[10px] text-yellow-500 font-black tracking-tighter text-center">CONTRACT<br>OFFERED</p>
+            </div>
+        </header>
 
+        <div class="flex-1 overflow-y-auto p-6 md:p-10">
+            
+            <section id="market-tab" class="tab-content block">
+                <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    </div>
+            </section>
+
+            <section id="tickets-tab" class="tab-content hidden">
+                <div class="max-w-3xl mx-auto space-y-4" id="ticket-container">
+                    </div>
+            </section>
+
+            <section id="vip-tab" class="tab-content hidden h-full">
+                <div class="glass rounded-3xl p-6 h-full flex flex-col max-w-4xl mx-auto border-yellow-500/10 shadow-2xl">
+                    <div id="vipChatDisplay" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4 text-sm scroll-smooth">
+                        <p class="text-center text-gray-600 py-10 italic">Executive Room is private & secure.</p>
+                    </div>
+                    <div class="flex gap-2 bg-black/40 p-2 rounded-2xl border border-gray-800">
+                        <select id="targetRole" class="bg-transparent text-[10px] text-yellow-500 font-bold px-3 outline-none border-r border-gray-800">
+                            <option value="OWNER">OWNER</option>
+                            <option value="MANAGER">MANAGER</option>
+                        </select>
+                        <input type="text" id="vipMsg" class="flex-1 bg-transparent px-4 py-2 outline-none text-sm" placeholder="Kirim pesan prioritas...">
+                        <button onclick="sendVIPChat()" class="bg-yellow-500 text-black px-6 py-2 rounded-xl font-bold text-xs hover:bg-yellow-400 transition">KIRIM</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="detailModal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center z-[200] p-4 backdrop-blur-md">
+        <div class="bg-[#181818] max-w-md w-full rounded-3xl border border-gray-800 overflow-hidden shadow-2xl">
+            <div class="relative h-72 w-full bg-black overflow-hidden group">
+                <div id="imageSlider"></div>
+                <button onclick="moveSlide(-1)" class="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-600 transition z-10"><i class="fa-solid fa-chevron-left"></i></button>
+                <button onclick="moveSlide(1)" class="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-600 transition z-10"><i class="fa-solid fa-chevron-right"></i></button>
+                <div class="absolute bottom-4 right-4 bg-black/60 px-3 py-1 rounded-lg text-[10px] font-mono" id="slideCount">1/1</div>
+            </div>
+            <div class="p-8">
+                <h2 id="detailTitle" class="text-2xl font-bold mb-1"></h2>
+                <p id="detailPrice" class="text-green-400 font-mono font-bold text-lg mb-4"></p>
+                <div class="h-32 overflow-y-auto mb-8 text-gray-400 text-sm leading-relaxed" id="detailDesc"></div>
                 <div class="flex gap-3">
-                    <button id="buyBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-900/20 active:scale-95">ORDER SEKARANG</button>
-                    <button onclick="closeDetail()" class="px-6 py-3 bg-gray-800 text-gray-400 rounded-xl hover:bg-gray-700 hover:text-white transition active:scale-95">TUTUP</button>
+                    <button id="buyBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition active:scale-95 shadow-lg shadow-blue-600/20">ORDER NOW</button>
+                    <button onclick="closeDetail()" class="px-8 py-4 bg-gray-800 text-gray-400 rounded-2xl hover:bg-gray-700 transition">TUTUP</button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="contractModal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center z-[110] p-4 backdrop-blur-md">
-        <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-gray-700 max-w-lg w-full shadow-2xl">
-            <h2 class="text-2xl font-bold mb-2 text-yellow-500">Perjanjian Kerja Sama</h2>
-            <div id="contractContent" class="bg-black/50 border border-gray-800 p-5 rounded-xl text-sm text-gray-300 font-mono mb-6 h-48 overflow-y-auto"></div>
-            <div class="flex items-center gap-3 mb-6 bg-gray-900/50 p-3 rounded-lg border border-gray-800">
-                <input type="checkbox" id="agreeCheck" class="w-5 h-5 rounded border-gray-700 bg-gray-800 text-blue-600">
-                <label for="agreeCheck" class="text-xs text-gray-400 cursor-pointer">Saya setuju dengan segala peraturan FSF SHOP.</label>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="signContract()" class="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition">TANDA TANGAN</button>
-                <button onclick="closeContractModal()" class="flex-1 bg-red-900/20 text-red-500 py-3 rounded-xl hover:bg-red-900/30 transition">BATAL</button>
             </div>
         </div>
     </div>
 
     <script type="module" src="js/dashboard.js"></script>
+    <script>
+        // SIDEBAR TOGGLE LOGIC
+        function toggleSidebar() {
+            const sidebar = document.getElementById('mainSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const icon = document.getElementById('barIcon');
+
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                icon.classList.replace('fa-bars', 'fa-xmark');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+                icon.classList.replace('fa-xmark', 'fa-bars');
+            }
+        }
+
+        // TAB SWITCH LOGIC
+        window.switchTab = function(tabId) {
+            // Update UI Tab Content
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId + '-tab').classList.remove('hidden');
+
+            // Update UI Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('nav-active', 'text-white');
+                btn.classList.add('text-gray-500');
+            });
+            
+            // Highlight active button
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+            if(activeBtn) {
+                activeBtn.classList.add('nav-active', 'text-white');
+                activeBtn.classList.remove('text-gray-500');
+            }
+
+            // Update Header Title
+            const titles = { 'market': 'Marketplace', 'tickets': 'Tiket Saya', 'vip': 'Executive Room' };
+            document.getElementById('tabTitle').innerText = titles[tabId];
+
+            // Close sidebar on mobile after selection
+            if (window.innerWidth < 768) toggleSidebar();
+        }
+    </script>
 </body>
 </html>

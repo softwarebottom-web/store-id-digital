@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Panel - FSF SHOP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #0f0f0f; color: white; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .accent { color: #3b82f6; }
+    </style>
+</head>
+<body class="p-4">
+
+    <div class="max-w-4xl mx-auto flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-black">WORKER <span class="text-blue-500">PANEL</span></h1>
+            <p class="text-xs text-gray-500" id="workerRole">Loading role...</p>
+        </div>
+        <div class="text-right">
+            <button onclick="openLeaveModal()" class="bg-red-900/30 text-red-500 border border-red-500/50 px-4 py-1 rounded-full text-xs font-bold hover:bg-red-500 hover:text-white transition">
+                <i class="fa-solid fa-calendar-minus mr-2"></i>AJUKAN LIBUR
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto grid grid-cols-2 gap-4 mb-8">
+        <div class="glass p-4 rounded-2xl">
+            <p class="text-gray-500 text-[10px] uppercase font-bold">Project Selesai</p>
+            <h2 class="text-2xl font-mono font-bold" id="statDone">0</h2>
+        </div>
+        <div class="glass p-4 rounded-2xl">
+            <p class="text-gray-500 text-[10px] uppercase font-bold">Status Saat Ini</p>
+            <h2 class="text-green-400 text-lg font-bold" id="statStatus">Ready to Work</h2>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <section>
+            <h3 class="text-sm font-bold mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-blue-500"></i> PROJECT TERSEDIA
+            </h3>
+            <div id="availableProjects" class="space-y-3">
+                <p class="text-gray-600 text-xs">Mencari project baru...</p>
+            </div>
+        </section>
+
+        <section>
+            <h3 class="text-sm font-bold mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-spinner text-yellow-500"></i> PROJECT SAYA
+            </h3>
+            <div id="myProjects" class="space-y-3">
+                <p class="text-gray-600 text-xs">Belum ada project yang diambil.</p>
+            </div>
+        </section>
+
+    </div>
+
+    <div id="leaveModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="glass w-full max-w-md p-6 rounded-3xl">
+            <h2 class="text-xl font-bold mb-2">Surat Izin Worker</h2>
+            <p class="text-gray-400 text-xs mb-6">Minimal 2 hari, Maksimal 4 hari.</p>
+            
+            <label class="block text-[10px] text-gray-500 mb-1">DURASI (HARI)</label>
+            <input type="number" id="leaveDuration" min="2" max="4" class="w-full bg-black/40 border border-gray-700 rounded-xl px-4 py-2 mb-4 focus:outline-none focus:border-blue-500" placeholder="Contoh: 3">
+
+            <label class="block text-[10px] text-gray-500 mb-1">ALASAN</label>
+            <textarea id="leaveReason" class="w-full bg-black/40 border border-gray-700 rounded-xl px-4 py-2 mb-6 h-24 focus:outline-none focus:border-blue-500" placeholder="Kenapa mau libur?"></textarea>
+
+            <div class="flex gap-2">
+                <button onclick="closeLeaveModal()" class="flex-1 py-3 rounded-xl font-bold text-gray-400 hover:bg-white/5 transition">BATAL</button>
+                <button onclick="submitLeave()" class="flex-1 bg-blue-600 py-3 rounded-xl font-bold hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition">KIRIM IZIN</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/worker.js"></script>
+</body>
+</html>

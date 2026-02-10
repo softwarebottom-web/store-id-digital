@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Detail - FSF SHOP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #0c0c0c; color: white; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
+        .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 15px; font-size: 13px; line-height: 1.5; }
+        .buyer-msg { background: #3b82f6; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .worker-msg { background: #262626; color: #d1d1d1; align-self: flex-start; border-bottom-left-radius: 2px; }
+    </style>
+</head>
+<body class="p-4 flex flex-col h-screen max-w-2xl mx-auto">
+
+    <div class="glass p-4 rounded-2xl mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div id="workerAvatar" class="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center font-black text-xl shadow-lg shadow-blue-500/20">?</div>
+            <div>
+                <h2 id="workerName" class="font-bold text-sm">Mencari Worker...</h2>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" id="statusDot"></span>
+                    <p id="workerStatus" class="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Status: Pending</p>
+                </div>
+            </div>
+        </div>
+        <div class="text-right">
+            <p id="projectTitle" class="text-[10px] text-blue-400 font-bold uppercase truncate w-24">Order #---</p>
+            <button onclick="location.href='dashboard.html'" class="text-[10px] text-gray-600 hover:text-white mt-1 underline">Kembali</button>
+        </div>
+    </div>
+
+    <div id="chatBox" class="flex-1 overflow-y-auto mb-4 space-y-4 flex flex-col pr-2 custom-scrollbar">
+        <div class="text-center text-[10px] text-gray-600 my-4 uppercase tracking-widest">Tiket Dibuat - Silakan Tunggu Worker</div>
+    </div>
+
+    <div class="glass p-2 rounded-2xl flex items-center gap-2 mb-2">
+        <input type="text" id="chatMsg" class="flex-1 bg-transparent border-none px-4 py-2 text-sm text-white focus:outline-none" placeholder="Tanya sesuatu ke worker...">
+        <button onclick="sendMessage()" class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center hover:bg-blue-500 transition shadow-lg shadow-blue-600/30">
+            <i class="fa-solid fa-paper-plane text-xs"></i>
+        </button>
+    </div>
+
+    <script type="module" src="js/ticket.js"></script>
+</body>
+</html>

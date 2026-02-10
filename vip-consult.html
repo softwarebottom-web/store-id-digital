@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Room - FSF SHOP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #080808; color: #e5e5e5; font-family: 'Inter', sans-serif; }
+        .gold-border { border: 1px solid rgba(212, 175, 55, 0.3); }
+        .gold-text { color: #d4af37; }
+        .executive-glass { background: rgba(15, 15, 15, 0.8); backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="h-screen flex flex-col p-4 max-w-3xl mx-auto">
+
+    <div class="executive-glass gold-border p-5 rounded-2xl mb-6 flex items-center justify-between shadow-[0_0_30px_rgba(212,175,55,0.1)]">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-full bg-gradient-to-b from-[#d4af37] to-[#aa8a2e] flex items-center justify-center text-black shadow-lg">
+                <i class="fa-solid fa-crown text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-black tracking-tighter gold-text uppercase">Executive Room</h1>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em]">Direct Access to Owner/Manager</p>
+            </div>
+        </div>
+        <button onclick="location.href='dashboard.html'" class="text-xs text-gray-600 hover:text-white transition underline">Exit</button>
+    </div>
+
+    <div id="vipChatBox" class="flex-1 overflow-y-auto mb-4 space-y-4 px-2 scroll-smooth">
+        <div class="text-center p-10">
+            <i class="fa-solid fa-shield-halved text-gray-800 text-5xl mb-4"></i>
+            <p class="text-gray-600 text-xs italic">Percakapan ini bersifat rahasia dan langsung terhubung ke manajemen pusat.</p>
+        </div>
+    </div>
+
+    <div class="executive-glass gold-border p-3 rounded-2xl flex gap-3 shadow-2xl">
+        <select id="targetRole" class="bg-black text-[10px] gold-text font-bold border-none rounded-lg px-2 focus:ring-0">
+            <option value="OWNER">OWNER</option>
+            <option value="MANAGER">MANAGER</option>
+        </select>
+        <input type="text" id="vipMsg" class="flex-1 bg-transparent border-none text-sm focus:outline-none" placeholder="Tulis pesan prioritas Anda...">
+        <button onclick="sendVIPChat()" class="bg-[#d4af37] text-black w-11 h-11 rounded-xl flex items-center justify-center hover:bg-[#f1c40f] transition active:scale-95 shadow-lg shadow-yellow-600/20">
+            <i class="fa-solid fa-paper-plane text-sm"></i>
+        </button>
+    </div>
+
+    <script type="module" src="js/executive.js"></script>
+</body>
+</html>
