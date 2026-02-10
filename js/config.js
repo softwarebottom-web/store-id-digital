@@ -1,8 +1,9 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-// --- FIREBASE CONFIG (Tetap untuk Login Discord) ---
+// --- 1. FIREBASE CONFIG ---
 const firebaseConfig = {
     apiKey: "AIzaSyBB9qHDl1szIdcd9KsC_-bQIiXKW6CO2t8",
     authDomain: "fs-shop-19c97.firebaseapp.com",
@@ -13,17 +14,22 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
 
-// --- SUPABASE CONFIG (Database Baru Anda) ---
+// EXPORT WAJIB UNTUK AUTH & DATABASE
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+
+// --- 2. SUPABASE CONFIG ---
 const SUPABASE_URL = "https://glopkjrxhvjoievsbkam.supabase.co";
 const SUPABASE_KEY = "sb_publishable_OubsnX3NpiV3rdTbZZhxBw_9eSETetm";
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- HELPER FUNCTIONS ---
-export const formatRupiah = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+// --- 3. HELPER FUNCTIONS ---
+export const formatRupiah = (n) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+};
 
-// Webhook Discord Terenkripsi
+// Webhook Discord (Base64 Reversed)
 const _0xSec = "MyExMyHpvB65KeXT2X4sPtnyyRb9nhnJwMAHEbtSJgi+WolgfuxqmstVec4O19+Ij2epTQKLRE5QXxRgc4s1swghMzMhjAIlA41JlFb7p4mxuMZmX5uqITkhFyEzOSGLK5N6yBnUO2G2A1YDkJISiuy1INkakWs+A8tUPwEQdn+W7ijxh0Hnmaw0cw==";
 const _0xDec = (s) => atob(s.split("").reverse().join(""));
 
