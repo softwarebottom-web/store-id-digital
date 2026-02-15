@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Produk - FSF SHOP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #0a0a0a; color: white; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(26, 26, 26, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body class="pb-10">
+
+    <nav class="p-5 flex items-center gap-4 max-w-2xl mx-auto">
+        <button onclick="window.history.back()" class="w-10 h-10 glass rounded-full flex items-center justify-center text-blue-500">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <h2 class="font-bold uppercase tracking-tighter">Detail Layanan</h2>
+    </nav>
+
+    <main class="max-w-2xl mx-auto px-5">
+        <div class="relative overflow-hidden rounded-[2rem] aspect-square glass border border-white/5">
+            <div id="imageSlider" class="flex transition-transform duration-500 h-full">
+                </div>
+            <div class="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2" id="sliderDots"></div>
+        </div>
+
+        <div class="mt-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span id="pCategory" class="text-[9px] bg-blue-500/10 text-blue-500 px-3 py-1 rounded-full font-black uppercase border border-blue-500/20">Category</span>
+                    <h1 id="pName" class="text-2xl font-black mt-3 leading-tight tracking-tight">Loading Name...</h1>
+                </div>
+                <p id="pPrice" class="text-xl font-mono font-black text-green-400">Rp 0</p>
+            </div>
+
+            <div class="mt-8 p-6 glass rounded-3xl border border-white/5">
+                <h3 class="text-xs font-black uppercase text-gray-500 tracking-widest mb-4">Deskripsi Layanan</h3>
+                <p id="pDesc" class="text-sm text-gray-300 leading-relaxed italic">Loading description...</p>
+            </div>
+        </div>
+
+        <div class="mt-10">
+            <button id="orderBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-[1.5rem] font-black uppercase tracking-widest text-xs shadow-2xl shadow-blue-900/40 transition-all active:scale-95">
+                Mulai Konsultasi & Beli
+            </button>
+            <p class="text-center text-[9px] text-gray-600 mt-4 uppercase font-bold tracking-widest">Aman & Terpercaya • Pembayaran via Owner Only</p>
+        </div>
+    </main>
+
+    <script type="module">
+        import { supabase, auth, formatRupiah, sendDiscordLog } from './js/config.js';
+        
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get('id');
+
+        async function loadDetail() {
+            const { data: p, error } = await supabase.from('products').select('*').eq('id', productId).single();
+            if (error) return window.location.href = 'dashboard.html';
+
+            document.getElementById('pName').innerText = p.name;
+            document.getElementById('pPrice').innerText = formatRupiah(p.price);
+            document.getElementById('pDesc').innerText = p.description;
+            document.getElementById('pCategory').innerText = p.category_slug;
+
+            // Render Slider (Support Max 4 Foto)
+            const slider = document.getElementById('imageSlider');
+            p.images.forEach(img => {
+                slider.innerHTML += `<img src="${img}" class="min-w-full h-full object-cover">`;
+            });
+
+            document.getElementById('orderBtn').onclick = () => buyNow(p);
+        }
+
+        async function buyNow(p) {
+            const user = auth.currentUser;
+            if(!user) return alert("Login dulu Cok!");
+            if(!confirm(`Buka tiket untuk ${p.name}?`)) return;
+
+            const { data, error } = await supabase.from('tickets').insert([{
+                buyer_id: user.uid,
+                buyer_name: user.displayName,
+                product_name: p.name,
+                price: p.price,
+                status: 'OPEN'
+            }]).select().single();
+
+            if(!error) {
+                sendDiscordLog("🛒 Order Baru", `**${user.displayName}** buka tiket: **${p.name}**`, 3447003);
+                window.location.href = `ticket.html?id=${data.id}`;
+            }
+        }
+        loadDetail();
+    </script>
+</body>
+</html>
