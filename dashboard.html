@@ -4,168 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - FSF SHOP</title>
-    <script src="js/protect.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #0c0c0c; color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
-        .glass { background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
-        .nav-active { background: #3b82f6 !important; color: white !important; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
-        #imageSlider { display: flex; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .slide-item { min-width: 100%; height: 100%; background-size: cover; background-position: center; flex-shrink: 0; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        body { background: #0a0a0a; color: white; font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .glass { background: rgba(26, 26, 26, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
+        /* Style untuk tombol kategori aktif */
+        .cat-btn.active { 
+            background: #2563eb; /* Blue-600 */
+            border-color: #3b82f6; 
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.5);
+            color: white;
+        }
     </style>
 </head>
-<body class="select-none flex h-screen overflow-hidden">
-    
-    <button onclick="toggleSidebar()" class="md:hidden fixed top-5 left-5 z-[100] bg-blue-600 w-11 h-11 rounded-xl flex items-center justify-center shadow-lg">
-        <i class="fa-solid fa-bars text-white text-lg" id="barIcon"></i>
-    </button>
+<body class="pb-24">
 
-    <aside id="mainSidebar" class="fixed inset-y-0 left-0 z-[90] w-72 bg-[#121212] border-r border-gray-800 flex flex-col justify-between py-6 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shrink-0">
+    <nav class="p-5 flex justify-between items-center max-w-6xl mx-auto sticky top-0 z-40 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5">
         <div>
-            <div class="px-8 mb-10 flex justify-between items-center">
-                <h1 class="font-black text-blue-500 text-2xl tracking-tighter">FSF <span class="text-white">SHOP</span></h1>
-                <button onclick="toggleSidebar()" class="md:hidden text-gray-500"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-
-            <nav class="space-y-2 px-4">
-                <button onclick="switchTab('market')" class="tab-btn nav-active w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition duration-200 text-white">
-                    <i class="fa-solid fa-shop"></i> <span class="text-sm font-bold">Marketplace</span>
-                </button>
-                <button onclick="switchTab('tickets')" class="tab-btn text-gray-500 w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-white/5 transition duration-200">
-                    <i class="fa-solid fa-ticket"></i> <span class="text-sm font-bold">Tiket Saya</span>
-                </button>
-                <button onclick="switchTab('vip')" class="tab-btn text-yellow-500/50 w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-yellow-500/5 transition duration-200">
-                    <i class="fa-solid fa-crown"></i> <span class="text-sm font-bold">Executive Room</span>
-                </button>
-                <a href="karir.html" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-gray-500 hover:bg-white/5 transition duration-200">
-                    <i class="fa-solid fa-briefcase"></i> <span class="text-sm font-bold">Karir</span>
-                </a>
-            </nav>
+            <h1 class="text-xl font-black tracking-tighter bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent">FSF SHOP</h1>
+            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Premium Digital Services</p>
         </div>
-
-        <div class="px-4 space-y-2">
-            <a href="ownerpanel.html" id="btnOwner" class="hidden w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-purple-400 border border-purple-900/50 bg-purple-900/10 hover:bg-purple-900/20 transition">
-                <i class="fa-solid fa-user-shield"></i> <span class="text-[10px] font-black uppercase">Admin Panel</span>
-            </a>
-            <button onclick="logout()" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-red-500 hover:bg-red-500/5 transition">
-                <i class="fa-solid fa-right-from-bracket"></i> <span class="text-sm font-bold">Logout</span>
-            </button>
+        <div class="flex items-center gap-4">
+            <div class="text-right hidden sm:block">
+                <p id="navUsername" class="text-xs font-bold text-gray-200">Loading...</p>
+                <p id="userRole" class="text-[9px] text-blue-500 uppercase font-black">Guest</p>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 p-[2px]">
+                <img id="userAvatar" src="https://via.placeholder.com/40" class="w-full h-full rounded-full bg-black object-cover">
+            </div>
         </div>
-    </aside>
+    </nav>
 
-    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-[85] hidden backdrop-blur-sm transition-opacity"></div>
-
-    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#0c0c0c] md:ml-0">
-        <header class="h-20 flex items-center justify-between px-8 border-b border-gray-800 shrink-0">
-            <div class="ml-12 md:ml-0">
-                <h2 id="tabTitle" class="text-xl font-bold">Marketplace</h2>
-                <p class="text-[10px] text-gray-500 uppercase tracking-widest">User: <span id="navUsername" class="text-blue-400">...</span></p>
-            </div>
-            
-            <div id="contract-widget" class="hidden bg-yellow-950/20 border border-yellow-800 px-4 py-2 rounded-xl animate-pulse cursor-pointer" onclick="openContractModal()">
-                <p class="text-[10px] text-yellow-500 font-black tracking-tighter text-center">CONTRACT<br>OFFERED</p>
-            </div>
-        </header>
-
-        <div class="flex-1 overflow-y-auto p-6 md:p-10">
-            
-            <section id="market-tab" class="tab-content block">
-                <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    </div>
-            </section>
-
-            <section id="tickets-tab" class="tab-content hidden">
-                <div class="max-w-3xl mx-auto space-y-4" id="ticket-container">
-                    </div>
-            </section>
-
-            <section id="vip-tab" class="tab-content hidden h-full">
-                <div class="glass rounded-3xl p-6 h-full flex flex-col max-w-4xl mx-auto border-yellow-500/10 shadow-2xl">
-                    <div id="vipChatDisplay" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4 text-sm scroll-smooth">
-                        <p class="text-center text-gray-600 py-10 italic">Executive Room is private & secure.</p>
-                    </div>
-                    <div class="flex gap-2 bg-black/40 p-2 rounded-2xl border border-gray-800">
-                        <select id="targetRole" class="bg-transparent text-[10px] text-yellow-500 font-bold px-3 outline-none border-r border-gray-800">
-                            <option value="OWNER">OWNER</option>
-                            <option value="MANAGER">MANAGER</option>
-                        </select>
-                        <input type="text" id="vipMsg" class="flex-1 bg-transparent px-4 py-2 outline-none text-sm" placeholder="Kirim pesan prioritas...">
-                        <button onclick="sendVIPChat()" class="bg-yellow-500 text-black px-6 py-2 rounded-xl font-bold text-xs hover:bg-yellow-400 transition">KIRIM</button>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </main>
-
-    <div id="detailModal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center z-[200] p-4 backdrop-blur-md">
-        <div class="bg-[#181818] max-w-md w-full rounded-3xl border border-gray-800 overflow-hidden shadow-2xl">
-            <div class="relative h-72 w-full bg-black overflow-hidden group">
-                <div id="imageSlider"></div>
-                <button onclick="moveSlide(-1)" class="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-600 transition z-10"><i class="fa-solid fa-chevron-left"></i></button>
-                <button onclick="moveSlide(1)" class="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-600 transition z-10"><i class="fa-solid fa-chevron-right"></i></button>
-                <div class="absolute bottom-4 right-4 bg-black/60 px-3 py-1 rounded-lg text-[10px] font-mono" id="slideCount">1/1</div>
-            </div>
-            <div class="p-8">
-                <h2 id="detailTitle" class="text-2xl font-bold mb-1"></h2>
-                <p id="detailPrice" class="text-green-400 font-mono font-bold text-lg mb-4"></p>
-                <div class="h-32 overflow-y-auto mb-8 text-gray-400 text-sm leading-relaxed" id="detailDesc"></div>
-                <div class="flex gap-3">
-                    <button id="buyBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition active:scale-95 shadow-lg shadow-blue-600/20">ORDER NOW</button>
-                    <button onclick="closeDetail()" class="px-8 py-4 bg-gray-800 text-gray-400 rounded-2xl hover:bg-gray-700 transition">TUTUP</button>
-                </div>
-            </div>
+    <div class="max-w-6xl mx-auto px-5 mt-6 mb-8">
+        <h2 class="text-sm font-bold mb-3 text-gray-400">Pilih Layanan</h2>
+        <div id="nav-categories" class="flex gap-3 overflow-x-auto no-scrollbar py-2">
+            <div class="w-24 h-8 bg-gray-800 rounded-full animate-pulse"></div>
+            <div class="w-24 h-8 bg-gray-800 rounded-full animate-pulse"></div>
+            <div class="w-24 h-8 bg-gray-800 rounded-full animate-pulse"></div>
         </div>
     </div>
 
+    <main class="max-w-6xl mx-auto px-5">
+        <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p class="col-span-full text-center text-gray-500 text-xs animate-pulse">Sedang memuat produk...</p>
+        </div>
+    </main>
+
+    <div class="fixed bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md glass rounded-2xl p-4 flex justify-around items-center z-50 shadow-2xl shadow-black/50">
+        <button onclick="location.reload()" class="text-blue-500 flex flex-col items-center gap-1">
+            <i class="fa-solid fa-house text-lg"></i>
+            <span class="text-[9px] font-bold">Home</span>
+        </button>
+        <button onclick="window.location.href='karir.html'" class="text-gray-500 hover:text-white transition flex flex-col items-center gap-1">
+            <i class="fa-solid fa-briefcase text-lg"></i>
+            <span class="text-[9px] font-bold">Karir</span>
+        </button>
+        <button onclick="window.location.href='workerpanel.html'" class="text-gray-500 hover:text-white transition flex flex-col items-center gap-1">
+            <i class="fa-solid fa-hammer text-lg"></i>
+            <span class="text-[9px] font-bold">Worker</span>
+        </button>
+        <button onclick="window.location.href='managerpanel.html'" class="text-gray-500 hover:text-white transition flex flex-col items-center gap-1">
+            <i class="fa-solid fa-gauge-high text-lg"></i>
+            <span class="text-[9px] font-bold">Manager</span>
+        </button>
+    </div>
+
     <script type="module" src="js/dashboard.js"></script>
-    <script>
-        // SIDEBAR TOGGLE LOGIC
-        function toggleSidebar() {
-            const sidebar = document.getElementById('mainSidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            const icon = document.getElementById('barIcon');
-
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-                icon.classList.replace('fa-bars', 'fa-xmark');
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-                icon.classList.replace('fa-xmark', 'fa-bars');
-            }
-        }
-
-        // TAB SWITCH LOGIC
-        window.switchTab = function(tabId) {
-            // Update UI Tab Content
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(tabId + '-tab').classList.remove('hidden');
-
-            // Update UI Buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('nav-active', 'text-white');
-                btn.classList.add('text-gray-500');
-            });
-            
-            // Highlight active button
-            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
-            if(activeBtn) {
-                activeBtn.classList.add('nav-active', 'text-white');
-                activeBtn.classList.remove('text-gray-500');
-            }
-
-            // Update Header Title
-            const titles = { 'market': 'Marketplace', 'tickets': 'Tiket Saya', 'vip': 'Executive Room' };
-            document.getElementById('tabTitle').innerText = titles[tabId];
-
-            // Close sidebar on mobile after selection
-            if (window.innerWidth < 768) toggleSidebar();
-        }
-    </script>
 </body>
 </html>

@@ -4,314 +4,120 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owner Panel - FSF SHOP</title>
-    
-    <script src="js/protect.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        darkBg: '#0f0f0f',
-                        panelBg: '#181818',
-                        accent: '#6366f1',
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f0f0f; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .tab-content.hidden { display: none; }
+        body { background: #0a0a0a; color: white; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(26, 26, 26, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .nav-active { background: #3b82f6; color: white; }
     </style>
 </head>
-<body class="bg-darkBg text-gray-300 font-sans antialiased overflow-hidden select-none">
+<body class="flex flex-col md:flex-row min-h-screen">
 
-    <div class="flex h-screen w-full">
+    <aside class="w-full md:w-64 bg-[#141414] border-r border-gray-800 p-6">
+        <h1 class="text-xl font-black text-blue-500 mb-8">FSF <span class="text-white">ADMIN</span></h1>
+        <nav class="space-y-2">
+            <button onclick="switchTab('dashboard')" class="tab-btn nav-active w-full text-left p-3 rounded-xl text-xs font-bold transition">📊 DASHBOARD</button>
+            <button onclick="switchTab('categories')" class="tab-btn w-full text-left p-3 rounded-xl text-xs font-bold text-gray-400 hover:bg-gray-800 transition">📁 KATEGORI</button>
+            <button onclick="switchTab('products')" class="tab-btn w-full text-left p-3 rounded-xl text-xs font-bold text-gray-400 hover:bg-gray-800 transition">📦 PRODUK</button>
+            <button onclick="switchTab('hrd')" class="tab-btn w-full text-left p-3 rounded-xl text-xs font-bold text-gray-400 hover:bg-gray-800 transition">👥 HRD / KARIR</button>
+        </nav>
+        <div class="mt-20">
+            <button onclick="window.location.href='dashboard.html'" class="text-[10px] text-gray-600 hover:text-white">&larr; Balik ke Toko</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-6 md:p-10">
         
-        <aside id="sidebar" class="w-64 bg-panelBg border-r border-gray-800 flex flex-col justify-between transition-all duration-300 shrink-0">
-            <div>
-                <div class="h-16 flex items-center justify-center border-b border-gray-800">
-                    <h1 class="text-xl font-bold text-white tracking-widest">FSF <span class="text-accent">ADMIN</span></h1>
+        <section id="dashboard" class="tab-content active">
+            <h2 class="text-2xl font-bold mb-6">Overview</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass p-6 rounded-3xl">
+                    <p class="text-gray-500 text-[10px] uppercase font-bold">Total Pendapatan</p>
+                    <h3 id="totalRev" class="text-3xl font-mono text-green-400 mt-2">Rp 0</h3>
                 </div>
-                
-                <nav class="mt-8 px-4 space-y-1">
-                    <button onclick="switchTab('dashboard')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition bg-gray-800 text-white flex items-center gap-3">
-                        <span>📊</span> Dashboard
-                    </button>
-                    <button onclick="switchTab('products')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition text-gray-400 flex items-center gap-3">
-                        <span>📦</span> Produk
-                    </button>
-                    <button onclick="switchTab('accounting')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition text-gray-400 flex items-center gap-3">
-                        <span>💰</span> Akuntansi
-                    </button>
-                    <button onclick="switchTab('workers')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition text-gray-400 flex items-center gap-3">
-                        <span>🛠️</span> Worker List
-                    </button>
-                    <button onclick="switchTab('hrd')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition text-gray-400 flex items-center gap-3">
-                        <span>👥</span> HRD & Karir
-                    </button>
-                    <button onclick="switchTab('executive')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition text-gray-400 flex items-center gap-3 relative">
-                        <span>👑</span> Executive <span id="vipBadge" class="hidden absolute right-4 w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
-                    </button>
-                    <button onclick="switchTab('coupons')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-sm font-medium transition text-gray-400 flex items-center gap-3">
-                        <span>🎟️</span> Kupon
-                    </button>
-                </nav>
-            </div>
-
-            <div class="p-4 border-t border-gray-800">
-                <button onclick="window.location.href='dashboard.html'" class="w-full text-center text-xs text-gray-500 hover:text-white py-2">
-                    &larr; Kembali ke Toko
-                </button>
-            </div>
-        </aside>
-
-        <main class="flex-1 overflow-y-auto relative bg-darkBg flex flex-col h-screen">
-            
-            <header class="flex items-center justify-between px-8 py-4 border-b border-gray-800 bg-darkBg/95 backdrop-blur sticky top-0 z-20">
-                <div class="flex items-center gap-4">
-                    <button onclick="toggleSidebar()" class="text-white hover:bg-gray-800 p-2 rounded-md transition focus:outline-none">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                    </button>
-                    <div>
-                        <h2 class="text-2xl font-bold text-white leading-none" id="pageTitle">Dashboard</h2>
-                        <p class="text-xs text-gray-500 mt-1">Owner Control Panel</p>
-                    </div>
+                <div class="glass p-6 rounded-3xl">
+                    <p class="text-gray-500 text-[10px] uppercase font-bold">Order Berhasil</p>
+                    <h3 id="totalSales" class="text-3xl font-mono text-white mt-2">0</h3>
                 </div>
-                <div class="bg-panelBg px-4 py-2 rounded border border-gray-800 text-xs shadow-sm">
-                    Status: <span class="text-green-500 font-bold animate-pulse">ONLINE</span>
-                </div>
-            </header>
-
-            <div class="p-8 flex-1">
-                
-                <section id="dashboard-section" class="tab-content fade-in">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div class="bg-panelBg p-6 rounded-lg border border-gray-800 hover:border-accent transition group">
-                            <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Total Pendapatan</p>
-                            <h3 class="text-4xl font-mono font-bold text-green-400 mt-2" id="totalRev">Rp 0</h3>
-                        </div>
-                        <div class="bg-panelBg p-6 rounded-lg border border-gray-800">
-                            <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Terjual</p>
-                            <h3 class="text-4xl font-mono font-bold text-white mt-2" id="totalSales">0</h3>
-                        </div>
-                        <div class="bg-panelBg p-6 rounded-lg border border-gray-800">
-                            <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Server Status</p>
-                            <h3 class="text-4xl font-mono font-bold text-yellow-500 mt-2 text-sm uppercase">Cloud Active</h3>
-                        </div>
-                    </div>
-                    <div class="bg-panelBg rounded-lg border border-gray-800 overflow-hidden shadow-xl">
-                        <div class="p-4 border-b border-gray-800 bg-[#202020]">
-                            <h3 class="font-bold text-sm text-white">Log Transaksi Terakhir</h3>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-sm text-gray-400">
-                                <thead class="bg-[#1a1a1a] text-gray-200">
-                                    <tr>
-                                        <th class="p-4">Customer</th>
-                                        <th class="p-4">Produk</th>
-                                        <th class="p-4">Harga</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="trxTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="products-section" class="tab-content hidden fade-in">
-                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                        <div class="xl:col-span-1">
-                            <div class="bg-panelBg p-6 rounded-lg border border-gray-800 sticky top-4">
-                                <h3 class="font-bold text-white mb-6 text-lg border-b border-gray-700 pb-2">Tambah Produk</h3>
-                                <form id="addProductForm" class="space-y-5">
-                                    <div>
-                                        <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Nama Produk</label>
-                                        <input type="text" id="pName" class="w-full bg-darkBg border border-gray-700 rounded p-3 text-sm text-white focus:border-accent outline-none transition" required>
-                                    </div>
-                                    <div>
-                                        <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Harga (IDR)</label>
-                                        <input type="number" id="pPrice" class="w-full bg-darkBg border border-gray-700 rounded p-3 text-sm text-white focus:border-accent outline-none transition" required>
-                                    </div>
-                                    <div>
-                                        <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Foto Produk (Multi - Max 4)</label>
-                                        <input type="file" id="pImages" accept="image/png, image/jpeg, image/webp" multiple onchange="handleFileSelect(event)" class="w-full bg-darkBg border border-gray-700 rounded p-2 text-sm text-gray-400 outline-none transition file:bg-gray-800 file:border-none file:text-white file:text-xs file:px-3 file:py-1 file:rounded file:mr-3 cursor-pointer">
-                                        <p class="text-[10px] text-gray-600 mt-1 uppercase tracking-tighter">*JPG, PNG, WEBP Mendukung • Maks 15MB Per File</p>
-                                    </div>
-                                    <div>
-                                        <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Deskripsi Produk</label>
-                                        <textarea id="pDesc" rows="4" class="w-full bg-darkBg border border-gray-700 rounded p-3 text-sm text-white focus:border-accent outline-none transition" required></textarea>
-                                    </div>
-                                    <button type="submit" class="w-full bg-accent hover:bg-indigo-600 text-white font-bold py-3 rounded shadow-lg transition uppercase tracking-widest text-xs">Post Product</button>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="xl:col-span-2 space-y-4" id="productList"></div>
-                    </div>
-                </section>
-
-                <section id="accounting-section" class="tab-content hidden fade-in">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <div class="bg-panelBg p-6 rounded-xl border border-gray-800">
-                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Total Profit Bersih (Net)</p>
-                            <h3 class="text-3xl font-mono font-bold text-green-400 mt-2" id="netProfit">Rp 0</h3>
-                        </div>
-                        <div class="bg-panelBg p-6 rounded-xl border border-gray-800">
-                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Estimasi Pengeluaran Worker</p>
-                            <h3 class="text-3xl font-mono font-bold text-red-500 mt-2" id="totalExpenses">Rp 0</h3>
-                        </div>
-                    </div>
-                    <div class="bg-panelBg p-6 rounded-xl border border-gray-800 overflow-hidden shadow-xl">
-                        <h3 class="font-bold text-white mb-4 uppercase text-xs tracking-widest text-accent">Laporan Performa Per-Worker</h3>
-                        <div id="workerPerformance" class="space-y-2 text-sm text-gray-400">
-                            </div>
-                    </div>
-                </section>
-
-                <section id="workers-section" class="tab-content hidden fade-in">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div class="bg-panelBg p-6 rounded-xl border border-gray-800 flex flex-col h-[70vh] shadow-xl">
-                            <h3 class="font-bold text-white mb-4 border-b border-gray-700 pb-2 flex justify-between uppercase text-xs tracking-widest">
-                                Manajemen Tim Worker 
-                                <span class="text-[10px] bg-accent/20 text-accent px-2 py-1 rounded" id="workerCount">0 Aktif</span>
-                            </h3>
-                            <div id="workerListContainer" class="space-y-3 overflow-y-auto flex-1 pr-2">
-                                </div>
-                        </div>
-                        <div class="bg-panelBg p-6 rounded-xl border border-gray-800 flex flex-col h-[70vh] shadow-xl">
-                            <h3 class="font-bold text-yellow-500 mb-4 border-b border-yellow-900/30 pb-2 uppercase text-xs tracking-widest">Surat Izin & History Logs</h3>
-                            <div id="leaveLogsContainer" class="space-y-4 overflow-y-auto flex-1 pr-2">
-                                </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="executive-section" class="tab-content hidden fade-in">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[75vh]">
-                        <div class="lg:col-span-1 bg-panelBg border border-gray-800 rounded-xl overflow-y-auto p-4" id="vipUserList">
-                            <h4 class="text-[10px] font-bold text-gray-500 uppercase mb-4 tracking-widest">VIP Conversations</h4>
-                            </div>
-                        <div class="lg:col-span-2 bg-panelBg border border-gray-800 rounded-xl flex flex-col p-6 shadow-2xl relative">
-                            <div id="vipChatHeader" class="border-b border-gray-800 pb-4 mb-4 flex items-center gap-3">
-                                <div class="w-10 h-10 bg-accent rounded-full flex items-center justify-center font-bold text-white shadow-lg">?</div>
-                                <div>
-                                    <h4 class="text-sm font-bold text-white" id="activeVIPName">Direct Management Access</h4>
-                                    <p class="text-[10px] text-green-500 uppercase font-bold">Secure Connection</p>
-                                </div>
-                            </div>
-                            <div id="vipChatDisplay" class="flex-1 overflow-y-auto space-y-4 mb-4 text-sm pr-2">
-                                <p class="text-center text-gray-600 mt-20 italic">Pilih percakapan untuk membalas</p>
-                            </div>
-                            <div class="flex gap-2 p-2 bg-darkBg border border-gray-800 rounded-xl">
-                                <input type="text" id="vipReplyMsg" class="flex-1 bg-transparent border-none text-white px-4 py-2 outline-none text-sm" placeholder="Ketik balasan eksekutif...">
-                                <button onclick="replyVIP()" class="bg-accent px-6 py-2 rounded-lg text-white font-bold text-xs hover:bg-indigo-600 transition shadow-lg shadow-indigo-500/20">KIRIM</button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="hrd-section" class="tab-content hidden fade-in">
-                    <div class="mb-6 p-6 bg-panelBg border border-gray-800 rounded-lg flex justify-between items-center shadow-lg">
-                        <div>
-                            <h4 class="text-white font-bold text-lg">System Recruitment Toggle</h4>
-                            <p class="text-xs text-gray-500 uppercase tracking-widest">Kontrol pendaftaran karir.html</p>
-                        </div>
-                        <button id="btnToggleCareer" onclick="toggleCareer()" class="px-6 py-3 rounded-xl text-white font-black transition active:scale-95 shadow-lg uppercase text-xs tracking-widest">
-                            Loading Status...
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="bg-panelBg p-6 rounded-lg border border-gray-800 h-[70vh] flex flex-col shadow-xl">
-                            <h3 class="font-bold text-white mb-4 text-lg border-b border-gray-700 pb-2 uppercase tracking-tighter">📂 Daftar Pelamar Masuk</h3>
-                            <div id="applicantList" class="space-y-3 overflow-y-auto flex-1 pr-2"></div>
-                        </div>
-                        <div class="bg-panelBg p-6 rounded-lg border border-gray-800 h-fit shadow-xl">
-                            <h3 class="font-bold text-white mb-4 text-lg border-b border-gray-700 pb-2 uppercase tracking-tighter">✍️ Terbitkan Kontrak</h3>
-                            <form id="contractForm" class="space-y-4">
-                                <input type="text" id="c_uid" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm font-mono" readonly placeholder="UID Target">
-                                <input type="text" id="c_name" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm" readonly placeholder="Nama Kandidat">
-                                <select id="c_role" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm focus:border-accent outline-none">
-                                    <option value="WORKER">WORKER (Admin)</option>
-                                    <option value="PARTNER">PARTNER (Mitra)</option>
-                                    <option value="MANAGER">MANAGER</option>
-                                </select>
-                                <input type="text" id="c_salary" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-sm focus:border-accent outline-none" placeholder="Gaji / Komisi" required>
-                                <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-black py-3 rounded transition shadow-lg uppercase text-xs tracking-widest">Kirim Kontrak</button>
-                            </form>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="coupons-section" class="tab-content hidden fade-in">
-                    <div class="bg-panelBg p-6 rounded-lg border border-gray-800 max-w-lg mx-auto mt-10 shadow-2xl text-center">
-                        <h3 class="font-bold text-2xl text-white mb-6 uppercase tracking-widest">Coupon Management</h3>
-                        <div class="space-y-4">
-                            <input type="text" id="couponCode" placeholder="KODE KUPON" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-center font-mono uppercase focus:border-green-500 outline-none">
-                            <input type="number" id="couponDisc" placeholder="Diskon (IDR)" class="w-full bg-darkBg border border-gray-700 p-3 rounded text-white text-center">
-                            <button onclick="alert('Feature Coming Soon')" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded font-bold shadow-lg transition uppercase text-xs">Terbitkan</button>
-                        </div>
-                    </div>
-                </section>
-
             </div>
-        </main>
+        </section>
+
+        <section id="categories" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">Manajemen Kategori</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass p-6 rounded-3xl h-fit">
+                    <h3 class="text-sm font-bold mb-4">Buat Kategori Baru</h3>
+                    <input type="text" id="catName" placeholder="Nama Kategori (ex: VPS)" class="w-full bg-black/40 border border-gray-800 p-3 rounded-xl text-sm mb-3">
+                    <input type="text" id="catLogo" placeholder="Link Logo (Icon URL)" class="w-full bg-black/40 border border-gray-800 p-3 rounded-xl text-sm mb-4">
+                    <button onclick="saveCategory()" class="w-full bg-blue-600 py-3 rounded-xl font-bold text-xs uppercase">Simpan Kategori</button>
+                </div>
+                <div class="glass p-6 rounded-3xl">
+                    <h3 class="text-sm font-bold mb-4">Daftar Kategori</h3>
+                    <div id="categoryList" class="space-y-3"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="products" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">Post Produk</h2>
+            <div class="glass p-8 rounded-3xl max-w-2xl">
+                <div class="space-y-4">
+                    <select id="pCategory" class="w-full bg-black/40 border border-gray-800 p-3 rounded-xl text-sm"></select>
+                    <input type="text" id="pName" placeholder="Nama Produk" class="w-full bg-black/40 border border-gray-800 p-3 rounded-xl text-sm">
+                    <input type="number" id="pPrice" placeholder="Harga (IDR)" class="w-full bg-black/40 border border-gray-800 p-3 rounded-xl text-sm">
+                    <textarea id="pDesc" placeholder="Deskripsi Lengkap" class="w-full bg-black/40 border border-gray-800 p-3 rounded-xl text-sm h-32"></textarea>
+                    <input type="file" id="pFile" multiple onchange="handleFileSelect(event)" class="text-xs text-gray-500">
+                    <button onclick="postProduct()" id="btnPost" class="w-full bg-green-600 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest">Publish Produk</button>
+                </div>
+            </div>
+        </section>
+<section id="hrd" class="tab-content">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <div>
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-user-plus text-blue-500"></i> Pelamar Baru
+            </h2>
+            <div id="applicantList" class="space-y-4">
+                <p class="text-gray-600 text-xs italic">Menunggu lamaran masuk...</p>
+            </div>
+        </div>
+
+        <div>
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-history text-yellow-500"></i> Logs Kontrak
+            </h2>
+            <div id="contractLogs" class="space-y-3 bg-[#141414] p-4 rounded-3xl border border-gray-800 h-[500px] overflow-y-auto no-scrollbar">
+                </div>
+        </div>
+
+<div class="mb-6 p-6 glass border border-gray-800 rounded-3xl flex justify-between items-center shadow-lg">
+    <div>
+        <h4 class="text-white font-bold text-lg">Status Rekrutmen</h4>
+        <p class="text-[10px] text-gray-500 uppercase tracking-widest">Kontrol visibilitas form di karir.html</p>
     </div>
-  <script type="module" src="js/owner.js"></script>
-    
+    <button id="btnToggleCareer" onclick="toggleCareer()" class="px-6 py-3 rounded-xl text-white font-black transition active:scale-95 shadow-lg uppercase text-[10px] tracking-widest bg-gray-700">
+        LOADING...
+    </button>
+</div>
+
+
+    </div>
+</section>
+
+
+    </main>
+
+    <script type="module" src="js/owner.js"></script>
     <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar.classList.contains('w-64')) {
-                sidebar.classList.remove('w-64'); 
-                sidebar.classList.add('w-0');
-            } else {
-                sidebar.classList.remove('w-0'); 
-                sidebar.classList.add('w-64');
-            }
-        }
-
         function switchTab(tabId) {
-            // Hide all sections
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            
-            // Remove active style from buttons
-            document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('bg-gray-800', 'text-white'); 
-                el.classList.add('text-gray-400');
-            });
-
-            // Show current section
-            const currentSection = document.getElementById(tabId + '-section');
-            if(currentSection) currentSection.classList.remove('hidden');
-            
-            // Add active style to current button
-            const activeBtn = Array.from(document.querySelectorAll('.nav-btn')).find(btn => btn.innerText.toLowerCase().includes(tabId));
-            if(activeBtn) {
-                activeBtn.classList.add('bg-gray-800', 'text-white');
-                activeBtn.classList.remove('text-gray-400');
-            }
-
-            // Update UI Titles
-            const titles = { 
-                'dashboard': 'Dashboard Overview', 
-                'products': 'Product Management', 
-                'hrd': 'HRD & Career Center', 
-                'coupons': 'Coupon Manager',
-                'accounting': 'Financial Accounting',
-                'workers': 'Worker & Team Management',
-                'executive': 'Executive VIP Room'
-            };
-            document.getElementById('pageTitle').innerText = titles[tabId] || 'Panel';
-
-            // Global Dispatcher: Supaya data di-load ulang saat tab diklik (jika di owner.js ada listenernya)
-            window.dispatchEvent(new CustomEvent('tabChanged', { detail: tabId }));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('nav-active', 'text-white'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('nav-active');
         }
     </script>
 </body>
