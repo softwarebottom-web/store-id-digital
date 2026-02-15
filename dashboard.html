@@ -10,64 +10,70 @@
         body { background: #0a0a0a; color: white; font-family: 'Inter', sans-serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .glass { background: rgba(26, 26, 26, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
-        /* Style untuk tombol kategori aktif */
         .cat-btn.active { 
-            background: #2563eb; /* Blue-600 */
-            border-color: #3b82f6; 
-            box-shadow: 0 0 15px rgba(37, 99, 235, 0.5);
+            background: rgba(59, 130, 246, 0.2); 
+            border-color: rgba(59, 130, 246, 0.5); 
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
             color: white;
         }
     </style>
 </head>
-<body class="pb-24">
+<body class="pb-28">
 
-    <nav class="p-5 flex justify-between items-center max-w-6xl mx-auto sticky top-0 z-40 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5">
+    <nav class="p-5 flex justify-between items-center max-w-6xl mx-auto sticky top-0 z-40 bg-[#0a0a0a]/80 backdrop-blur-md">
         <div>
             <h1 class="text-xl font-black tracking-tighter bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent">FSF SHOP</h1>
             <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Premium Digital Services</p>
         </div>
         <div class="flex items-center gap-4">
-            <div class="text-right hidden sm:block">
+            <div class="text-right">
                 <p id="navUsername" class="text-xs font-bold text-gray-200">Loading...</p>
-                <p id="userRole" class="text-[9px] text-blue-500 uppercase font-black">Guest</p>
+                <p id="userRole" class="text-[9px] text-blue-500 uppercase font-black tracking-tighter">Guest</p>
             </div>
             <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 p-[2px]">
-                <img id="userAvatar" src="https://via.placeholder.com/40" class="w-full h-full rounded-full bg-black object-cover">
+                <div class="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden">
+                    <img id="userAvatar" src="https://via.placeholder.com/40" class="w-full h-full object-cover">
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="max-w-6xl mx-auto px-5 mt-6 mb-8">
-        <h2 class="text-sm font-bold mb-3 text-gray-400">Pilih Layanan</h2>
+    <div id="admin-menu-area" class="max-w-6xl mx-auto px-5 mt-4"></div>
+
+    <div class="max-w-6xl mx-auto px-5 mt-8 mb-6">
+        <h2 class="text-sm font-bold mb-4 text-gray-400 flex items-center gap-2">
+            <i class="fa-solid fa-shapes text-blue-500 text-[10px]"></i> LAYANAN KAMI
+        </h2>
         <div id="nav-categories" class="flex gap-3 overflow-x-auto no-scrollbar py-2">
-            <div class="w-24 h-8 bg-gray-800 rounded-full animate-pulse"></div>
-            <div class="w-24 h-8 bg-gray-800 rounded-full animate-pulse"></div>
-            <div class="w-24 h-8 bg-gray-800 rounded-full animate-pulse"></div>
-        </div>
+            <button onclick="filterService('all')" class="cat-btn active px-6 py-2.5 rounded-2xl text-[10px] font-black border border-gray-800 transition-all whitespace-nowrap bg-[#1a1a1a]/50">
+                SEMUA
+            </button>
+            </div>
     </div>
 
     <main class="max-w-6xl mx-auto px-5">
-        <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <p class="col-span-full text-center text-gray-500 text-xs animate-pulse">Sedang memuat produk...</p>
+        <div id="product-container" class="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6">
+            <div class="animate-pulse glass rounded-[2rem] h-64"></div>
+            <div class="animate-pulse glass rounded-[2rem] h-64"></div>
         </div>
     </main>
 
-    <div class="fixed bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md glass rounded-2xl p-4 flex justify-around items-center z-50 shadow-2xl shadow-black/50">
+    <div class="fixed bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md glass rounded-[2rem] p-4 flex justify-around items-center z-50 shadow-2xl shadow-black">
         <button onclick="location.reload()" class="text-blue-500 flex flex-col items-center gap-1">
             <i class="fa-solid fa-house text-lg"></i>
-            <span class="text-[9px] font-bold">Home</span>
+            <span class="text-[8px] font-bold uppercase tracking-tighter">Home</span>
         </button>
         <button onclick="window.location.href='karir.html'" class="text-gray-500 hover:text-white transition flex flex-col items-center gap-1">
             <i class="fa-solid fa-briefcase text-lg"></i>
-            <span class="text-[9px] font-bold">Karir</span>
+            <span class="text-[8px] font-bold uppercase tracking-tighter">Karir</span>
         </button>
-        <button onclick="window.location.href='workerpanel.html'" class="text-gray-500 hover:text-white transition flex flex-col items-center gap-1">
-            <i class="fa-solid fa-hammer text-lg"></i>
-            <span class="text-[9px] font-bold">Worker</span>
+        <button onclick="window.location.href='orders.html'" class="text-gray-400 hover:text-white transition flex flex-col items-center gap-1">
+            <i class="fa-solid fa-receipt text-lg"></i>
+            <span class="text-[8px] font-bold uppercase tracking-tighter">Pesanan</span>
         </button>
-        <button onclick="window.location.href='managerpanel.html'" class="text-gray-500 hover:text-white transition flex flex-col items-center gap-1">
-            <i class="fa-solid fa-gauge-high text-lg"></i>
-            <span class="text-[9px] font-bold">Manager</span>
+        <button onclick="window.location.href='profile.html'" class="text-gray-500 hover:text-white transition flex flex-col items-center gap-1">
+            <i class="fa-solid fa-gear text-lg"></i>
+            <span class="text-[8px] font-bold uppercase tracking-tighter">Akun</span>
         </button>
     </div>
 
