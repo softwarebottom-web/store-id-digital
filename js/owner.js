@@ -1,298 +1,202 @@
 import { auth, db, supabase, formatRupiah, sendDiscordLog } from './config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { 
+    collection, onSnapshot, addDoc, deleteDoc, doc, getDoc, 
+    updateDoc, serverTimestamp, query, orderBy, setDoc 
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-// ==========================================
-// GLOBAL STATES & PROTEKSI
-// ==========================================
-let selectedImagesBase64 = [];
-let activeVIPBuyer = null;
+// STATE GLOBAL
+let selectedImages = [];
+let currentCareerStatus = false;
 
+// --- 1. AUTH & ROLE CHECK ---
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         const snap = await getDoc(doc(db, "users", user.uid));
-        if (snap.exists() && snap.data().role === 'OWNER') { 
-            initOwner(); 
-        } 
-        else { window.location.href = "dashboard.html"; }
-    } else { window.location.href = "index.html"; }
+        if (snap.exists() && snap.data().role === "OWNER") {
+            initOwner();
+        } else { 
+            window.location.href = "dashboard.html"; 
+        }
+    } else { 
+        window.location.href = "index.html"; 
+    }
 });
 
-function initOwner() { 
-    loadStats(); 
-    loadProducts(); 
-    loadApplicants(); 
-    checkCareerToggle();
-    loadAccounting();
-    loadWorkerList();
-    loadLeaveLogs();
-    subscribeExecutive();
+function initOwner() {
+    loadStats();
+    loadCategories();
+    loadApplicants();
+    loadContractLogs();
+    monitorCareerStatus();
 }
 
-// ==========================================
-// 1. AKUNTANSI & STATISTIK (SUPABASE)
-// ==========================================
-async function loadStats() {
-    const { data: tickets, error } = await supabase
-        .from('tickets')
-        .select('*')
-        .order('created_at', { ascending: false });
+// --- 2. MANAJEMEN KATEGORI (SUPABASE) ---
+window.saveCategory = async () => {
+    const name = document.getElementById('catName').value;
+    const logo = document.getElementById('catLogo').value;
+    const slug = name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
 
-    if (error) return;
+    if (!name || !logo) return alert("Nama & Logo kategori wajib diisi!");
 
-    let total = 0, count = 0, html = "";
-    tickets.forEach(data => {
-        if (data.status === 'PAID') {
-            total += parseInt(data.price);
-            count++;
-        }
-        const statusColor = data.status === 'PAID' ? 'text-green-400' : 'text-yellow-500';
-        html += `<tr class="border-b border-gray-800">
-                    <td class="p-4">${data.buyer_name}</td>
-                    <td class="p-4 text-gray-300">${data.product_name}</td>
-                    <td class="p-4 font-mono ${statusColor}">${formatRupiah(data.price)} [${data.status}]</td>
-                 </tr>`;
-    });
+    const { error } = await supabase.from('categories').insert([{ name, logo_url: logo, slug }]);
+    if (!error) {
+        alert("Kategori " + name + " berhasil dibuat!");
+        location.reload();
+    } else { alert("Gagal: " + error.message); }
+};
 
-    document.getElementById('totalRev').innerText = formatRupiah(total);
-    document.getElementById('totalSales').innerText = count;
-    document.getElementById('trxTable').innerHTML = html || '<tr><td colspan="3" class="p-4 text-center">Belum ada transaksi.</td></tr>';
-}
+async function loadCategories() {
+    const { data: cats } = await supabase.from('categories').select('*').order('name');
+    const list = document.getElementById('categoryList');
+    const select = document.getElementById('pCategory');
 
-async function loadAccounting() {
-    const { data: tickets } = await supabase.from('tickets').select('*').eq('status', 'PAID');
-    let bruto = 0, workerGaji = 0, performance = {};
-
-    tickets?.forEach(t => {
-        bruto += t.price;
-        const commission = t.price * 0.3; // Worker fee 30%
-        workerGaji += commission;
-        if (t.worker_name) {
-            performance[t.worker_name] = (performance[t.worker_name] || 0) + t.price;
-        }
-    });
-
-    document.getElementById('netProfit').innerText = formatRupiah(bruto - workerGaji);
-    document.getElementById('totalExpenses').innerText = formatRupiah(workerGaji);
-    
-    const perfContainer = document.getElementById('workerPerformance');
-    perfContainer.innerHTML = Object.entries(performance).map(([name, val]) => `
-        <div class="flex justify-between text-xs p-3 bg-white/5 rounded-lg border border-white/5">
-            <span class="font-bold text-gray-300">${name}</span>
-            <span class="text-green-400 font-mono">${formatRupiah(val)}</span>
-        </div>
-    `).join('') || '<p class="text-center py-4 text-xs text-gray-600">Belum ada data performa worker.</p>';
-}
-
-// ==========================================
-// 2. MANAJEMEN WORKER & IZIN (SUPABASE)
-// ==========================================
-async function loadWorkerList() {
-    const { data: workers } = await supabase.from('workers').select('*');
-    const container = document.getElementById('workerListContainer');
-    document.getElementById('workerCount').innerText = `${workers?.length || 0} Workers`;
-
-    container.innerHTML = workers?.map(w => `
-        <div class="p-4 bg-white/5 border border-gray-800 rounded-xl flex justify-between items-center hover:border-accent transition">
-            <div>
-                <p class="font-bold text-white text-sm">${w.name}</p>
-                <p class="text-[9px] ${w.status === 'ACTIVE' ? 'text-green-500' : 'text-red-500'} font-bold uppercase">${w.status}</p>
-            </div>
-            <div class="text-right">
-                <p class="text-[9px] text-gray-500 uppercase">Projects</p>
-                <p class="text-sm font-mono text-accent font-bold">${w.total_projects}</p>
-            </div>
-        </div>
-    `).join('') || '<p class="text-center text-gray-600 py-10">Belum ada tim worker.</p>';
-}
-
-async function loadLeaveLogs() {
-    const { data: requests } = await supabase.from('leave_requests').select('*').order('created_at', { ascending: false });
-    const container = document.getElementById('leaveLogsContainer');
-    
-    container.innerHTML = requests?.map(req => {
-        const isPending = req.status === 'PENDING';
-        return `
-            <div class="p-4 rounded-xl border ${isPending ? 'border-yellow-600/30 bg-yellow-600/5' : 'border-gray-800 bg-white/5'}">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-bold text-white">${req.worker_name}</span>
-                    <span class="text-[9px] px-2 py-0.5 rounded font-black ${req.status === 'APPROVED' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}">${req.status}</span>
+    if (list) {
+        list.innerHTML = cats.map(c => `
+            <div class="flex items-center justify-between p-3 glass rounded-2xl border border-gray-800">
+                <div class="flex items-center gap-3">
+                    <img src="${c.logo_url}" class="w-6 h-6 object-contain">
+                    <span class="text-xs font-bold">${c.name}</span>
                 </div>
-                <p class="text-[11px] text-gray-400 mb-3 italic">"${req.reason}"</p>
-                ${isPending ? `
-                    <div class="flex gap-2">
-                        <button onclick="handleLeave('${req.id}', '${req.worker_id}', 'APPROVED', ${req.duration})" class="flex-1 py-2 bg-green-600 text-white text-[10px] font-bold rounded-lg hover:bg-green-500 transition">ACC</button>
-                        <button onclick="handleLeave('${req.id}', '${req.worker_id}', 'DECLINED')" class="flex-1 py-2 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-500 transition">TOLAK</button>
-                    </div>
-                ` : `<p class="text-[9px] text-gray-600 font-bold uppercase tracking-widest">${req.duration} Hari Izin • ${req.status}</p>`}
+                <button onclick="deleteCategory('${c.id}')" class="text-red-500 text-[10px] italic">Hapus</button>
             </div>
-        `;
-    }).join('') || '<p class="text-center text-gray-600 py-10 text-xs">History izin kosong.</p>';
+        `).join('') || '<p class="text-gray-600 text-xs italic">Belum ada kategori.</p>';
+    }
+
+    if (select) {
+        select.innerHTML = `<option value="">-- PILIH KATEGORI --</option>` + 
+            cats.map(c => `<option value="${c.slug}">${c.name}</option>`).join('');
+    }
 }
 
-window.handleLeave = async (id, workerId, status, days = 0) => {
-    try {
-        await supabase.from('leave_requests').update({ status }).eq('id', id);
-        if (status === 'APPROVED') {
-            const leaveUntil = new Date();
-            leaveUntil.setDate(leaveUntil.getDate() + days);
-            await supabase.from('workers').update({ status: 'ON_LEAVE', leave_until: leaveUntil }).eq('uid', workerId);
-            sendDiscordLog("📅 IZIN DISETUJUI", `Worker **${workerId}** resmi libur ${days} hari.`, 65280);
-        }
-        alert("Status izin berhasil diperbarui!");
-        loadLeaveLogs(); loadWorkerList();
-    } catch (e) { alert(e.message); }
+window.deleteCategory = async (id) => {
+    if (confirm("Hapus kategori?")) {
+        await supabase.from('categories').delete().eq('id', id);
+        loadCategories();
+    }
 };
 
-// ==========================================
-// 3. EXECUTIVE VIP ROOM (REALTIME)
-// ==========================================
-function subscribeExecutive() {
-    supabase.channel('executive_chats').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'executive_chats' }, () => {
-        document.getElementById('vipBadge').classList.remove('hidden');
-        loadVIPList();
-    }).subscribe();
-    loadVIPList();
-}
+// --- 3. MANAJEMEN PRODUK (4 FOTO BASE64) ---
+window.handleFileSelect = (e) => {
+    const files = e.target.files;
+    selectedImages = [];
+    if (files.length > 4) return alert("Maksimal 4 foto!");
 
-async function loadVIPList() {
-    const { data } = await supabase.from('executive_chats').select('buyer_id, buyer_name').order('created_at', { ascending: false });
-    const unique = [...new Map(data?.map(i => [i.buyer_id, i])).values()];
-    const container = document.getElementById('vipUserList');
-    container.innerHTML = unique.map(u => `
-        <div onclick="selectVIP('${u.buyer_id}', '${u.buyer_name}')" class="p-4 mb-2 rounded-xl border border-gray-800 hover:bg-accent/10 cursor-pointer transition active:scale-95">
-            <p class="text-xs font-bold text-white">${u.buyer_name}</p>
-            <p class="text-[9px] text-gray-500 font-mono tracking-tighter">${u.buyer_id}</p>
-        </div>
-    `).join('');
-}
-
-window.selectVIP = async (id, name) => {
-    activeVIPBuyer = id;
-    document.getElementById('activeVIPName').innerText = name;
-    document.getElementById('vipBadge').classList.add('hidden');
-    const { data: messages } = await supabase.from('executive_chats').select('*').eq('buyer_id', id).order('created_at', { ascending: true });
-    
-    const display = document.getElementById('vipChatDisplay');
-    display.innerHTML = messages.map(m => `
-        <div class="flex ${m.target_role === 'OWNER' ? 'justify-end' : 'justify-start'}">
-            <div class="max-w-[85%] p-3 rounded-2xl ${m.target_role === 'OWNER' ? 'bg-accent text-white rounded-tr-none' : 'bg-white/10 text-gray-200 rounded-tl-none'} shadow-sm">
-                <p class="text-[9px] opacity-50 mb-1 font-bold uppercase">${m.target_role === 'OWNER' ? 'MANAGEMENT' : m.buyer_name}</p>
-                <p class="text-xs leading-relaxed">${m.message}</p>
-            </div>
-        </div>
-    `).join('');
-    display.scrollTop = display.scrollHeight;
-};
-
-window.replyVIP = async () => {
-    const msg = document.getElementById('vipReplyMsg').value;
-    if (!msg || !activeVIPBuyer) return;
-    await supabase.from('executive_chats').insert([{
-        buyer_id: activeVIPBuyer, buyer_name: document.getElementById('activeVIPName').innerText,
-        message: msg, target_role: 'OWNER'
-    }]);
-    document.getElementById('vipReplyMsg').value = "";
-    selectVIP(activeVIPBuyer, document.getElementById('activeVIPName').innerText);
-};
-
-// ==========================================
-// 4. PRODUK & HRD (COMPRESSION & LEGACY)
-// ==========================================
-const compressImage = (base64Str) => {
-    return new Promise((resolve) => {
-        const img = new Image(); img.src = base64Str;
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let w = img.width, h = img.height;
-            if (w > 800) { h *= 800/w; w = 800; }
-            canvas.width = w; canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', 0.7));
-        };
-    });
-};
-
-window.handleFileSelect = async (e) => {
-    const files = Array.from(e.target.files);
-    selectedImagesBase64 = [];
-    if (files.length > 4) { alert("Max 4 foto!"); e.target.value = ""; return; }
-    for (const f of files) {
+    Array.from(files).forEach(file => {
         const reader = new FileReader();
-        const promise = new Promise(res => {
-            reader.onload = async (ev) => res(await compressImage(ev.target.result));
-        });
-        reader.readAsDataURL(f);
-        selectedImagesBase64.push(await promise);
+        reader.onload = (event) => selectedImages.push(event.target.result);
+        reader.readAsDataURL(file);
+    });
+};
+
+window.postProduct = async () => {
+    const btn = document.getElementById('btnPost');
+    const payload = {
+        name: document.getElementById('pName').value,
+        price: parseInt(document.getElementById('pPrice').value),
+        description: document.getElementById('pDesc').value,
+        category_slug: document.getElementById('pCategory').value,
+        images: selectedImages
+    };
+
+    if (!payload.category_slug || selectedImages.length === 0) return alert("Lengkapi data produk!");
+
+    btn.innerText = "POSTING...";
+    btn.disabled = true;
+
+    const { error } = await supabase.from('products').insert([payload]);
+    if (!error) {
+        alert("Produk berhasil di-publish!");
+        location.reload();
+    } else {
+        alert("Gagal: " + error.message);
+        btn.innerText = "Publish Produk";
+        btn.disabled = false;
     }
 };
 
-async function loadProducts() {
-    const { data: products } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-    const list = document.getElementById('productList');
-    list.innerHTML = products?.map(p => `
-        <div class="bg-panelBg p-4 flex justify-between items-center border border-gray-800 rounded-xl hover:border-accent transition">
-            <div class="flex items-center gap-4">
-                <img src="${p.images?.[0] || 'https://via.placeholder.com/50'}" class="w-12 h-12 object-cover rounded-lg">
-                <div>
-                    <p class="font-bold text-sm text-white">${p.name}</p>
-                    <p class="text-[10px] text-green-400 font-mono">${formatRupiah(p.price)}</p>
-                </div>
-            </div>
-            <button onclick="delProd('${p.id}')" class="text-red-500 text-[10px] font-black hover:bg-red-500/10 px-3 py-2 rounded-lg transition uppercase">HAPUS</button>
-        </div>
-    `).join('') || '<p class="text-center text-gray-600 py-10">Kosong.</p>';
+// --- 4. HRD & KONTRAK (FIRESTORE) ---
+function loadApplicants() {
+    onSnapshot(collection(db, "applications"), (snap) => {
+        const container = document.getElementById('applicantList');
+        container.innerHTML = snap.docs.map(d => {
+            const data = d.data();
+            return `
+                <div class="glass p-5 rounded-3xl border border-gray-800 flex justify-between items-center mb-4">
+                    <div>
+                        <p class="font-bold text-white text-sm">${data.realName}</p>
+                        <p class="text-[10px] text-blue-400 font-black uppercase tracking-widest">${data.roleTarget}</p>
+                        <p class="text-[8px] text-gray-600">UID: ${data.uid}</p>
+                    </div>
+                    <button onclick="accApplicant('${data.uid}', '${data.realName}', '${d.id}')" class="bg-blue-600 px-4 py-2 rounded-xl text-[10px] font-bold">ACC & KONTRAK</button>
+                </div>`;
+        }).join('') || '<p class="text-gray-600 text-xs italic">Belum ada pelamar baru.</p>';
+    });
 }
 
-document.getElementById('addProductForm').addEventListener('submit', async(e) => {
-    e.preventDefault();
-    const btn = e.target.querySelector('button');
-    btn.disabled = true; btn.innerText = "Processing...";
-    try {
-        await supabase.from('products').insert([{
-            name: document.getElementById('pName').value,
-            price: parseInt(document.getElementById('pPrice').value),
-            description: document.getElementById('pDesc').value,
-            images: selectedImagesBase64
-        }]);
-        alert("Produk Berhasil di-Publish!"); e.target.reset(); loadProducts();
-    } catch (err) { alert(err.message); } 
-    finally { btn.disabled = false; btn.innerText = "POST PRODUCT"; }
-});
+window.accApplicant = async (uid, name, docId) => {
+    const gaji = prompt(`Gaji/Komisi untuk ${name}:`, "70% per project");
+    if (!gaji) return;
 
-window.delProd = async(id) => {
-    if(confirm("Hapus produk?")) { await supabase.from('products').delete().eq('id', id); loadProducts(); }
+    await addDoc(collection(db, "contracts"), {
+        uid, candidateName: name, salary: gaji, status: "OFFERED", createdAt: serverTimestamp()
+    });
+    await deleteDoc(doc(db, "applications", docId));
+    alert("Kontrak Terkirim!");
 };
 
-// HRD & TOGGLE
-async function checkCareerToggle() {
-    const { data } = await supabase.from('settings').select('value').eq('key', 'career_status').single();
-    const btn = document.getElementById('btnToggleCareer');
-    if (btn) {
-        const isOpen = data.value.isOpen;
-        btn.innerText = isOpen ? "TUTUP LOWONGAN" : "BUKA LOWONGAN";
-        btn.className = `px-6 py-3 rounded-xl text-white font-black transition uppercase text-xs ${isOpen ? 'bg-red-600' : 'bg-green-600'}`;
-    }
+function loadContractLogs() {
+    const q = query(collection(db, "contracts"), orderBy("createdAt", "desc"));
+    onSnapshot(q, (snap) => {
+        const container = document.getElementById('contractLogs');
+        container.innerHTML = snap.docs.map(d => {
+            const c = d.data();
+            const color = c.status === 'SIGNED' ? 'text-green-500' : 'text-yellow-500';
+            return `
+                <div class="p-3 bg-black/20 border-b border-gray-800 flex justify-between items-center text-[10px]">
+                    <div><p class="font-bold text-white">${c.candidateName}</p><p class="text-gray-500">${c.salary}</p></div>
+                    <p class="${color} font-black uppercase text-[9px]">${c.status}</p>
+                </div>`;
+        }).join('');
+    });
+}
+
+// --- 5. SAKLAR OPEN/CLOSE KARIR ---
+function monitorCareerStatus() {
+    onSnapshot(doc(db, "settings", "career"), (snap) => {
+        if (snap.exists()) {
+            currentCareerStatus = snap.data().isOpen;
+            const btn = document.getElementById('btnToggleCareer');
+            if (btn) {
+                btn.innerText = currentCareerStatus ? "OPEN (REKRUTMEN AKTIF)" : "CLOSED (REKRUTMEN TUTUP)";
+                btn.className = `px-6 py-3 rounded-xl font-black transition text-[10px] tracking-widest ${currentCareerStatus ? 'bg-green-600 shadow-lg shadow-green-900/20' : 'bg-red-600 shadow-lg shadow-red-900/20'}`;
+            }
+        }
+    });
 }
 
 window.toggleCareer = async () => {
-    const { data } = await supabase.from('settings').select('value').eq('key', 'career_status').single();
-    const newState = !data.value.isOpen;
-    await supabase.from('settings').update({ value: { isOpen: newState } }).eq('key', 'career_status');
-    alert("Status Karir Diubah!"); checkCareerToggle();
+    const careerRef = doc(db, "settings", "career");
+    try {
+        await updateDoc(careerRef, { isOpen: !currentCareerStatus });
+    } catch (e) {
+        await setDoc(careerRef, { isOpen: true });
+    }
 };
 
-async function loadApplicants() {
-    // Tetap gunakan Firebase/Firestore untuk data sensitif HRD jika diperlukan
-    const list = document.getElementById('applicantList');
-    list.innerHTML = '<p class="text-center py-10 text-xs text-gray-600">Fitur HRD sinkron dengan Firestore.</p>';
+// --- 6. STATS & ACCOUNTING ---
+async function loadStats() {
+    const { data: trx } = await supabase.from('tickets').select('price').eq('status', 'PAID');
+    let total = 0;
+    trx?.forEach(t => total += t.price);
+    document.getElementById('totalRev').innerText = formatRupiah(total);
+    document.getElementById('totalSales').innerText = trx?.length || 0;
 }
 
-// Global Switch Tab Dispatcher
-window.addEventListener('tabChanged', (e) => {
-    const tabId = e.detail;
-    if(tabId === 'accounting') loadAccounting();
-    if(tabId === 'workers') { loadWorkerList(); loadLeaveLogs(); }
-    if(tabId === 'executive') loadVIPList();
-});
+// UI Switcher
+window.switchTab = (tabId) => {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('nav-active', 'bg-gray-800', 'text-white'));
+    document.getElementById(tabId).classList.add('active');
+    event.target.classList.add('nav-active', 'bg-gray-800', 'text-white');
+};
