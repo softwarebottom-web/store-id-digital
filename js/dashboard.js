@@ -1,175 +1,123 @@
-import { auth, db, supabase, formatRupiah, sendDiscordLog } from './config.js';
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { auth, db, supabase, formatRupiah } from './config.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-// Variabel Global untuk Slider
-let currentSlide = 0;
-let productSlides = [];
+let allProducts = [];
 
-// --- AUTH STATE & INITIALIZATION ---
+// 1. SECURITY GUARD & ROLE REDIRECT
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // Cek Role di Firebase
-        const snap = await getDoc(doc(db, "users", user.uid));
-        const role = snap.exists() ? snap.data().role : "BUYER";
-        
-        document.getElementById('navUsername').innerText = user.displayName;
-        if(role === 'OWNER') document.getElementById('btnOwner').classList.remove('hidden');
-        
-        // Panggil Data dari Supabase
-        loadProducts();
-        loadTickets(user.uid);
-        
-        // Kontrak tetap di Firebase (Data Sensitif)
-        checkContract(user.uid); 
-    } else { 
-        window.location.href = "index.html"; 
+        try {
+            // Ambil data user dari Firestore secara akurat
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                const role = userData.role;
+
+                // Render UI berdasarkan Role
+                renderRoleMenu(role);
+                
+                // Init data dashboard
+                loadNavCategories();
+                loadProducts();
+            } else {
+                console.error("Data user tidak ditemukan di Firestore!");
+                // Jika user login tapi data Firestore gak ada, lempar ke profile buat lengkapi data
+            }
+        } catch (error) {
+            console.error("Gagal verifikasi role:", error);
+        }
+    } else {
+        window.location.href = "index.html";
     }
 });
 
-// --- LOAD PRODUK (SUPABASE) ---
+// 2. RENDER MENU BERDASARKAN ROLE (Agar panel rahasia muncul/hilang)
+function renderRoleMenu(role) {
+    const adminMenu = document.getElementById('admin-menu-area'); // Area di sidebar/navbar dashboard
+    if (!adminMenu) return;
+
+    let menuHtml = '';
+
+    if (role === "OWNER") {
+        menuHtml = `
+            <div class="mt-4 p-4 glass rounded-2xl border border-yellow-500/30 bg-yellow-500/5">
+                <p class="text-[9px] text-yellow-500 font-black uppercase tracking-widest mb-2">Owner Access</p>
+                <button onclick="window.location.href='ownerpanel.html'" class="w-full bg-yellow-600 text-white py-2 rounded-xl text-[10px] font-bold shadow-lg">BUKA OWNER PANEL</button>
+            </div>`;
+    } else if (role === "MANAGER") {
+        menuHtml = `
+            <div class="mt-4 p-4 glass rounded-2xl border border-cyan-500/30 bg-cyan-500/5">
+                <p class="text-[9px] text-cyan-500 font-black uppercase tracking-widest mb-2">Manager Access</p>
+                <button onclick="window.location.href='managerpanel.html'" class="w-full bg-cyan-600 text-white py-2 rounded-xl text-[10px] font-bold">BUKA MANAGER PANEL</button>
+            </div>`;
+    } else if (role === "WORKER") {
+        menuHtml = `
+            <div class="mt-4 p-4 glass rounded-2xl border border-blue-500/30 bg-blue-500/5">
+                <p class="text-[9px] text-blue-500 font-black uppercase tracking-widest mb-2">Worker Access</p>
+                <button onclick="window.location.href='workerpanel.html'" class="w-full bg-blue-600 text-white py-2 rounded-xl text-[10px] font-bold">BUKA WORKER PANEL</button>
+            </div>`;
+    }
+
+    adminMenu.innerHTML = menuHtml;
+}
+
+// 3. LOAD KATEGORI DARI SUPABASE (DINAMIS)
+async function loadNavCategories() {
+    const nav = document.getElementById('nav-categories');
+    const { data: cats, error } = await supabase.from('categories').select('*').order('name');
+    
+    if (error) return console.error(error);
+
+    let html = `<button onclick="filterService('all')" class="cat-btn active px-6 py-2 rounded-full text-xs font-bold border border-gray-800 transition-all whitespace-nowrap">Semua</button>`;
+    
+    cats.forEach(c => {
+        html += `
+            <button onclick="filterService('${c.slug}')" class="cat-btn bg-[#1a1a1a] border border-gray-800 px-6 py-2 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-2 hover:border-blue-500 transition-all text-gray-400">
+                <img src="${c.logo_url}" class="w-4 h-4 object-contain">
+                <span>${c.name}</span>
+            </button>`;
+    });
+    nav.innerHTML = html;
+}
+
+// 4. LOAD PRODUK DARI SUPABASE
 async function loadProducts() {
+    const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+    if (!error) {
+        allProducts = data;
+        renderProducts(data);
+    }
+}
+
+function renderProducts(data) {
     const container = document.getElementById('product-container');
-    
-    // Ambil data dari tabel 'products' di Supabase
-    const { data: products, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+    if (!container) return;
 
-    if (error) {
-        console.error("Supabase Error:", error.message);
-        return;
-    }
-
-    container.innerHTML = "";
-    if (!products || products.length === 0) { 
-        if(document.getElementById('empty-msg')) document.getElementById('empty-msg').classList.remove('hidden'); 
-        return; 
-    }
-
-    products.forEach(p => {
-        // Supabase menggunakan array 'images'
-        const allImages = p.images && p.images.length > 0 ? p.images : ['https://via.placeholder.com/300x200?text=No+Image'];
-        const thumb = allImages[0];
-        
-        container.innerHTML += `
-            <div class="bg-[#1e1e1e] border border-gray-800 rounded-xl overflow-hidden cursor-pointer hover:border-blue-500 transition-all group shadow-lg" 
-                 onclick='showDetail("${p.id}", "${p.name}", ${p.price}, ${JSON.stringify(allImages)}, \`${p.description}\`)'>
-                <div class="h-40 w-full bg-cover bg-center group-hover:scale-110 transition-transform duration-500" style="background-image: url('${thumb}')"></div>
-                <div class="p-4">
-                    <h3 class="font-bold text-white text-base truncate">${p.name}</h3>
-                    <div class="flex justify-between items-center mt-3">
-                        <span class="text-green-400 font-mono text-sm font-bold">${formatRupiah(p.price)}</span>
-                        <span class="text-[10px] text-gray-500 font-bold uppercase">${allImages.length} Foto</span>
-                    </div>
+    container.innerHTML = data.map(p => `
+        <div class="glass rounded-3xl overflow-hidden border border-gray-800 hover:border-blue-500 transition-all group">
+            <div class="h-44 bg-cover bg-center transition-transform group-hover:scale-105" style="background-image: url('${p.images[0]}')"></div>
+            <div class="p-5">
+                <div class="flex justify-between items-center">
+                    <span class="text-[9px] text-blue-400 font-black uppercase">${p.category_slug}</span>
                 </div>
-            </div>`;
+                <h3 class="font-bold text-white mt-1 text-sm">${p.name}</h3>
+                <p class="text-green-400 font-bold text-sm mt-1">${formatRupiah(p.price)}</p>
+                <button onclick="orderProduct('${p.id}')" class="w-full mt-4 bg-white text-black py-3 rounded-2xl text-[10px] font-black uppercase hover:bg-blue-500 hover:text-white transition-all">Beli Sekarang</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.filterService = (slug) => {
+    // UI Feedback
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-blue-500', 'text-white');
+        btn.classList.add('text-gray-400');
     });
-}
+    event.currentTarget.classList.add('active', 'border-blue-500', 'text-white');
 
-// --- LOGIC MODAL DETAIL DENGAN SLIDER ---
-window.showDetail = (id, name, price, images, desc) => {
-    productSlides = images;
-    currentSlide = 0;
-
-    document.getElementById('detailTitle').innerText = name;
-    document.getElementById('detailPrice').innerText = formatRupiah(price);
-    document.getElementById('detailDesc').innerText = desc;
-    
-    updateSliderUI();
-
-    const buyBtn = document.getElementById('buyBtn');
-    if (buyBtn) {
-        buyBtn.onclick = () => { closeDetail(); buyProduct(id, name, price); };
-    }
-
-    document.getElementById('detailModal').classList.remove('hidden');
+    const filtered = slug === 'all' ? allProducts : allProducts.filter(p => p.category_slug === slug);
+    renderProducts(filtered);
 };
-
-function updateSliderUI() {
-    const sliderContainer = document.getElementById('imageSlider');
-    const counter = document.getElementById('slideCount');
-    if (!sliderContainer) return;
-
-    sliderContainer.innerHTML = "";
-    productSlides.forEach((img) => {
-        sliderContainer.innerHTML += `<div class="slide-item" style="background-image: url('${img}')"></div>`;
-    });
-    
-    if(counter) counter.innerText = `1 / ${productSlides.length}`;
-    moveSlide(0);
-}
-
-window.moveSlide = (direction) => {
-    currentSlide = (currentSlide + direction + productSlides.length) % productSlides.length;
-    const slider = document.getElementById('imageSlider');
-    const counter = document.getElementById('slideCount');
-    if (slider) {
-        slider.style.transform = `translateX(-${currentSlide * 100}%)`;
-    }
-    if(counter) counter.innerText = `${currentSlide + 1} / ${productSlides.length}`;
-};
-
-window.closeDetail = () => {
-    document.getElementById('detailModal').classList.add('hidden');
-};
-
-// --- TICKETS SYSTEM (SUPABASE) ---
-async function loadTickets(uid) {
-    const container = document.getElementById('ticket-container');
-    
-    const { data: tickets, error } = await supabase
-        .from('tickets')
-        .select('*')
-        .eq('buyer_id', uid)
-        .order('created_at', { ascending: false });
-
-    if (error) return;
-
-    container.innerHTML = "";
-    tickets.forEach(t => {
-        let color = t.status === 'PAID' ? 'text-green-500' : (t.status === 'CLOSED' ? 'text-red-500' : 'text-yellow-500');
-        container.innerHTML += `
-            <div class="bg-[#181818] p-3 rounded border-l-2 border-gray-700 mb-2 hover:bg-gray-800 transition cursor-default text-[11px]">
-                <div class="flex justify-between">
-                    <span class="font-bold truncate w-24">${t.product_name}</span>
-                    <span class="${color}">${t.status}</span>
-                </div>
-            </div>`;
-    });
-}
-
-// --- ORDER SYSTEM (SUPABASE) ---
-window.buyProduct = async (pid, pname, price) => {
-    if(!confirm(`Beli ${pname}?`)) return;
-    const user = auth.currentUser;
-    
-    try {
-        const { error } = await supabase
-            .from('tickets')
-            .insert([{
-                buyer_id: user.uid,
-                buyer_name: user.displayName,
-                product_name: pname,
-                price: price,
-                status: 'OPEN'
-            }]);
-
-        if (error) throw error;
-
-        sendDiscordLog("🛒 Order Baru", `**${user.displayName}** memesan **${pname}**`, 15844367);
-        alert("Tiket terkirim ke Supabase!"); 
-        loadTickets(user.uid);
-    } catch (e) { 
-        alert("Error: " + e.message); 
-    }
-};
-
-// --- LOGOUT & CONTRACT (TETAP FIREBASE) ---
-window.logout = () => signOut(auth).then(() => window.location.href="index.html");
-
-// Fungsi kontrak tetap menggunakan Firestore karena melibatkan perubahan Role User secara langsung
-async function checkContract(uid) {
-    // ... (Logika Firebase kontrak kamu tetap sama)
-}
